@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="./images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SceneIt: Search Less, Watch More</title>
+  <link rel="stylesheet" href="stylesheets/main.css" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+
+  <style>
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: left;
+      padding-top: 2em;
+    }
+
+    #signup-container,
+    #login-container {
+      width: 30em;
+    }
+
+    button {
+      margin-top: 1.5em;
+    }
+
+    .password-strength-container {
+      margin-top: 0.5em;
+      height: 20px; /* Container height */
+      width: 100%;
+      background-color: #eee;
+      border-radius: 4px;
+      overflow: hidden; /* Ensures the inner bar stays within the rounded corners */
+    }
+
+    .password-strength-bar {
+      height: 100%;
+      width: 0%; /* Initial width */
+      background-color: #ddd; /* Initial color */
+      transition: width 0.3s ease, background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75em;
+      color: white;
+      font-weight: bold;
+    }
+
+    .password-strength-label {
+        font-size: 0.8em;
+        margin-top: 0.25em;
+        text-align: right; /* Align label to the right */
+        color: #555;
+    }
+
+    body.dark .password-strength-container {
+        background-color: #42414d; /* Darker background for dark mode */
+    }
+
+    body.dark .password-strength-label {
+        color: var(--light-grey);
+    }
+
+    /* Specific colors for strength levels */
+    .strength-very-weak { background-color: #dc3545; } /* Red */
+    .strength-weak { background-color: #fd7e14; } /* Orange */
+    .strength-medium { background-color: #ffc107; } /* Yellow */
+    .strength-strong { background-color: #28a745; } /* Green */
+    .strength-very-strong { background-color: #20c997; } /* Teal */
+
+  </style>
+
+  <script type="module">
+    const {createApp} = Vue;
+    import Navbar from "./components/Navbar.js";
+
+    const nav = createApp({
+      components: {
+        Navbar,
+      },
+    });
+    nav.mount("#navbar");
+  </script>
+</head>
+
+<body>
+  <div id="navbar">
+    <navbar />
+  </div>
+
+  <main id="content">
+    <section id="signup-container">
+      <h1>Create an account</h1>
+      <p>
+        Sign up to keep track of your movies preferences and personalise your
+        recommendations
+      </p>
+      <form class="default-border">
+        <base-input label="Email" id="email" type="email" required v-model="email"
+          v-model:error="errors.email"></base-input>
+        <base-input label="Username" id="username" type="text" required v-model="username"
+          v-model:error="errors.username"></base-input>
+
+        <base-input
+            label="Password"
+            id="password"
+            type="password"
+            required
+            v-model="password"
+            @input="updatePasswordStrength"
+            v-model:error="errors.password">
+        </base-input>
+        <div class="password-strength-container">
+          <div class="password-strength-bar"
+               :style="{ width: passwordStrength.width, backgroundColor: passwordStrength.color }">
+          </div>
+        </div>
+        <div class="password-strength-label" :style="{ color: passwordStrength.labelColor }">
+          {{ passwordStrength.label }}
+        </div>
+
+        <base-input label="Date of Birth" id="birth_date" type="date" required v-model="birthDate"
+          v-model:error="errors.birthDate"></base-input>
+
+        <button id="btn-submit" class="btn-primary" @click="signup" type="button">
+          Signup
+        </button>
+        <p>Already have an account? <a href="./login.html">Login</a></p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module">
+    import BaseInput from "./components/BaseInput.js";
+    const {createApp} = Vue;
+
+    createApp({
+      components: {
+        BaseInput,
+      },
+      data() {
+        return {
+          email: "",
+          username: "",
+          password: "",
+          birthDate: "",
+          user: null,
+          errors: {
+            email: "",
+            username: "",
+            password: "",
+            birthDate: "",
+          },
+          passwordStrength: {
+            score: 0,
+            label: 'Enter a password',
+            color: '#ddd', // Default bar color
+            width: '0%',
+            labelColor: '#555' // Default label color
+          }
+        };
+      },
+      methods: {
+        validateInput() {
+          // ... (existing validation logic)
+          let validationPassed = true;
+          const mandatoryCheck = (the_field, the_label) => {
+            if (the_field === "") {
+              return `${the_label} cannot be empty`;
+            }
+            return "";
+          };
+          this.errors.email = mandatoryCheck(this.email, "Email");
+          this.errors.username = mandatoryCheck(this.username, "Username");
+          this.errors.password = mandatoryCheck(this.password, "Password");
+          this.errors.birthDate = mandatoryCheck(
+            this.birthDate,
+            "Date of Birth",
+          );
+          for (const k in this.errors) {
+            if (this.errors[k] !== "") {
+              validationPassed = false; // ensure this is set if any error
+            }
+          }
+          return validationPassed;
+        },
+        updatePasswordStrength(event) {
+          const pword = event.target ? event.target.value : this.password; // Handle direct call or event
+          let score = 0;
+          const len = pword.length;
+
+          if (len === 0) {
+            this.passwordStrength = { score: 0, label: 'Enter a password', color: '#ddd', width: '0%', labelColor: '#555' };
+            return;
+          }
+
+          // Award points based on criteria
+          if (len >= 8) score += 1;
+          if (len >= 10) score += 1;
+          if (len >= 12) score += 1;
+
+          if (/[a-z]/.test(pword)) score += 1; // lowercase
+          if (/[A-Z]/.test(pword)) score += 1; // uppercase
+          if (/[0-9]/.test(pword)) score += 1; // numbers
+          if (/[\W_]/.test(pword)) score += 1; // special characters (non-alphanumeric)
+
+          // Max score can be 3 (length) + 4 (char types) = 7
+
+          let strength = {
+            score: score,
+            label: '',
+            color: '',
+            width: '',
+            labelColor: '#555'
+          };
+
+          if (len > 0 && len < 6 && score <=1) { // Still too short, even if it got a char type point
+            strength.label = 'Too short';
+            strength.color = '#dc3545'; // Red
+            strength.width = '10%';
+            strength.labelColor = '#dc3545';
+          } else if (score <= 2) {
+            strength.label = 'Very Weak';
+            strength.color = '#dc3545'; // Red
+            strength.width = '20%';
+            strength.labelColor = '#dc3545';
+          } else if (score === 3) {
+            strength.label = 'Weak';
+            strength.color = '#fd7e14'; // Orange
+            strength.width = '40%';
+            strength.labelColor = '#fd7e14';
+          } else if (score === 4 || score === 5) {
+            strength.label = 'Medium';
+            strength.color = '#ffc107'; // Yellow
+            strength.width = '60%';
+            strength.labelColor = '#b88b00'; // Darker yellow for text
+          } else if (score === 6) {
+            strength.label = 'Strong';
+            strength.color = '#28a745'; // Green
+            strength.width = '80%';
+            strength.labelColor = '#28a745';
+          } else { // score >= 7
+            strength.label = 'Very Strong';
+            strength.color = '#20c997'; // Teal
+            strength.width = '100%';
+            strength.labelColor = '#20c997';
+          }
+          this.passwordStrength = strength;
+        },
+        async signup() {
+          if (!this.validateInput()) {
+            return;
+          }
+          // Ensure password has some minimal strength before allowing signup
+          if (this.passwordStrength.score < 3) { // Example: require at least 'Weak'
+            showToast("Password is too weak. Please choose a stronger password.", "error");
+            this.errors.password = "Password is too weak.";
+            return;
+          }
+
+          try {
+            const request_data = {
+              email: this.email,
+              username: this.username,
+              password: this.password,
+              birth_date: this.birthDate,
+            };
+
+            const response = await fetch("/api/auth/signup", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(request_data),
+            });
+
+            if (!response.ok) {
+              const {error} = await response.json();
+              throw new Error(error);
+            }
+
+            this.user = await response.json();
+            showToast("Account created! Logging you in automatically.", "success");
+
+            const loginWrapper = async () => {
+              this.user = await login(this.username, this.password);
+              if (this.user.username) window.location.replace("/index.html");
+            };
+            window.setTimeout(loginWrapper, 3000);
+          } catch (err) {
+            showToast(err.message || String(err), "error");
+          }
+        },
+      },
+      watch: {
+        // If password is changed programmatically or cleared, also update strength
+        password(newValue) {
+            if (!newValue) { // If password field is cleared
+                 this.passwordStrength = { score: 0, label: 'Enter a password', color: '#ddd', width: '0%', labelColor: '#555' };
+            } else {
+                 // Call updatePasswordStrength with a mock event or directly pass the value
+                 // this.updatePasswordStrength({ target: { value: newValue } });
+                 // No, this watcher isn't strictly needed if @input on BaseInput works correctly.
+                 // BaseInput itself should emit the new value, which triggers the v-model update,
+                 // and its own @input should call updatePasswordStrength.
+            }
+        }
+      },
+      mounted() {
+        // Initialize strength for empty password if needed, though input handler should cover it
+        this.updatePasswordStrength({ target: { value: this.password } });
+      }
+    }).mount("#content");
+  </script>
+  <script src="./scripts/client_auth.js"></script>
+  <script src="./scripts/toaster.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</body>
+
+</html>

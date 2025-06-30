@@ -1,0 +1,42 @@
+{
+  "name": "scene-it-backend",
+  "version": "1.0.0",
+  "description": "Server for the SceneIt app using Node, Express and MySQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UAdelaide/25S1_WDC_PG_Groups_13.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UAdelaide/25S1_WDC_PG_Groups_13/issues"
+  },
+  "homepage": "https://github.com/UAdelaide/25S1_WDC_PG_Groups_13#readme",
+  "dependencies": {
+    "argon2": "^0.43.0",
+    "axios": "^1.9.0",
+    "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "http-errors": "^2.0.0",
+    "multer": "^2.0.0",
+    "mysql2": "^3.14.0",
+    "nodemon": "^3.1.10",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "sharp": "^0.31.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.24.0",
+    "nodemon": "^3.1.10"
+  }
+}

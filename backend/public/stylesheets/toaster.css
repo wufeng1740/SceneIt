@@ -1,0 +1,27 @@
+.toastify {
+  padding: 0.5em 1em !important;
+  font-weight: 500;
+  border: 1px solid;
+  border-radius: var(--border-radius-rounded) !important;
+}
+
+.error-toaster {
+  background: var(--red-200) !important;
+  border-color: var(--red-300);
+}
+
+.warning-toaster {
+  background: var(--orange-200) !important;
+  border-color: var(--orange-300);
+}
+
+.info-toaster {
+  background: var(--blue-200) !important;
+  border-color: var(--blue-300);
+}
+
+.success-toaster {
+  background: var(--green-200) !important;
+  border-color: var(--green-300);
+}
+

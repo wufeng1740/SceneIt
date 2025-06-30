@@ -1,0 +1,167 @@
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  transition: all 0.8s ease;
+}
+
+.search-container.compact {
+  justify-content: flex-start;
+  min-height: auto;
+  margin-top: 20px;
+}
+
+/* Search bar */
+.search-bar-inline {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 90%;
+  max-width: 600px;
+  transition: all 0.8s ease;
+}
+
+.search-container.compact .search-bar-inline {
+  transform: scale(1);
+}
+
+/* Search input */
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1.2em;
+  background-color: #fff;
+  color: #000;
+  transition: font-size 0.8s ease, background-color 0.4s ease;
+}
+
+.search-container.compact .search-input {
+  font-size: 1em;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--light-blue);
+}
+
+/* Dark mode input */
+body.dark .search-input {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #475569;
+}
+
+body.dark .search-input:focus {
+  border-color: var(--light-blue);
+}
+
+/* Search button */
+.button-blue {
+  padding: 12px 20px;
+  font-size: 1.2em;
+  white-space: nowrap;
+  background-color: #60a5fa;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: font-size 0.8s ease, background-color 0.3s ease;
+}
+
+.search-container.compact .button-blue {
+  font-size: 1em;
+}
+
+/* Filter row container */
+.filter-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  max-width: 1000px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.search-container.compact .filter-row {
+  opacity: 1;
+}
+
+/* Filter dropdowns */
+.search-filter {
+  flex: 1 1 30%;
+  min-width: 140px;
+  padding: 10px 12px;
+  font-size: 1em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+
+body.dark .search-filter {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #475569;
+}
+
+/* Movie grid */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 1200px;
+}
+
+/* Movie card */
+.movie-item {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Movie poster */
+.movie-item img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Movie title */
+.movie-item h3 {
+  font-size: 1rem;
+  margin: 8px 0;
+  word-break: break-word;
+}
+
+body.dark .movie-item h3 {
+  color: #f1f5f9;
+}
+
+/* Movie details text */
+.movie-item p {
+  font-size: 0.85rem;
+  margin: 4px 0;
+  line-height: 1.2;
+}
+
+/* Small screen adjustments */
+@media (max-width: 480px) {
+  .search-filter {
+    flex: 1 1 100%;
+  }
+}

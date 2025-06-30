@@ -1,0 +1,68 @@
+/* Add some basic styling */
+.movie-list-container {
+  padding: 20px;
+  font-family: sans-serif;
+
+  & .loading,
+  .error-message {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+  & .loading {
+    background-color: #e0e0e0;
+  }
+
+  & .error-message {
+    background-color: #ffdddd;
+    border: 1px solid #ffaaaa;
+    color: #d8000c;
+  }
+
+  & .movie-grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,
+        minmax(150px, 1fr));
+    /* Responsive grid */
+    gap: 15px;
+  }
+
+  & .movie-item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    background-color: #f9f9f9;
+  }
+
+  & .movie-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+  }
+
+  & .movie-date {
+    font-size: 0.8em;
+    color: #555;
+    margin-bottom: 5px;
+  }
+
+  & .movie-poster-path {
+    font-size: 0.7em;
+    color: #777;
+    word-wrap: break-word;
+    /* Prevent long paths from overflowing */
+  }
+
+  /* Basic image styling if you add them later */
+  & .movie-item img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px;
+    border-radius: 4px;
+  }
+}

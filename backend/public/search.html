@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SceneIt: Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="stylesheet" href="stylesheets/main.css" />
+<link rel="stylesheet" href="stylesheets/search.css" />
+<link rel="stylesheet"
+href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility" />
+
+<script type="module">
+import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+import Navbar from "./components/Navbar.js";
+
+createApp({ components: { Navbar } }).mount("#navbar");
+
+createApp({
+data() {
+return {
+searchQuery: "",
+searchResults: [],
+isLoading: false,
+error: null,
+searchedOnce: false,
+filters: { genre: "", yearSort: "", ratingSort: "" },
+tmdbImageBaseUrl: "https://image.tmdb.org/t/p/w342"
+};
+},
+computed: {
+// Dynamically extract unique genres from results
+uniqueGenres() {
+          const nameSet = new Set();
+          const genreList = [];
+
+          this.searchResults.forEach(movie => {
+            if (movie.genre_ids) {
+              movie.genre_ids.forEach(id => {
+                const name = this.getGenreNameById(id);
+                if (!nameSet.has(name)) {
+                  nameSet.add(name);
+                  genreList.push({ id, name });
+                }
+              });
+            }
+          });
+
+          return genreList.sort((a, b) => a.name.localeCompare(b.name));
+        },
+// Apply filters and sorting
+filteredAndSortedResults() {
+let results = [...this.searchResults];
+if (this.filters.genre) {
+results = results.filter(movie => movie.genre_ids?.includes(parseInt(this.filters.genre)));
+}
+if (this.filters.yearSort) {
+results.sort((a, b) =>
+this.filters.yearSort === "asc"
+? (a.release_date || "").localeCompare(b.release_date || "")
+: (b.release_date || "").localeCompare(a.release_date || "")
+);
+}
+if (this.filters.ratingSort) {
+results.sort((a, b) =>
+this.filters.ratingSort === "asc"
+? (a.vote_average || 0) - (b.vote_average || 0)
+: (b.vote_average || 0) - (a.vote_average || 0)
+);
+}
+return results;
+}
+},
+methods: {
+// Fetch search results
+async performSearch() {
+if (!this.searchQuery) {
+this.searchResults = [];
+this.error = "Please enter a search term.";
+this.searchedOnce = true;
+return;
+}
+this.isLoading = true;
+this.error = null;
+this.searchResults = [];
+this.searchedOnce = true;
+
+try {
+const response = await fetch(`/api/movies/search?query=${encodeURIComponent(this.searchQuery)}`);
+if (!response.ok) throw new Error(`Error: ${response.status}`);
+const data = await response.json();
+this.searchResults = data.results || [];
+this.filters.genre = this.filters.yearSort = this.filters.ratingSort = "";
+} catch (err) {
+this.error = err.message || "Failed to fetch search results.";
+} finally {
+this.isLoading = false;
+}
+},
+getGenreNameById(id) {
+const genreMap = { 878: "Science Fiction", 53: "Thriller", 16: "Animation", 80: "Crime" };
+return genreMap[id] || "Other";
+},
+resetRatingSort() { this.filters.ratingSort = ""; },
+resetYearSort() { this.filters.yearSort = ""; }
+}
+}).mount("#search-app");
+</script>
+</head>
+
+<body>
+<div id="navbar"><navbar /></div>
+
+<main id="search-app" class="container">
+<div :class="['search-container', { compact: searchedOnce }]">
+<div class="search-bar-inline">
+<label for="search-input-field" class="visually-hidden">Search for sci-fi movies</label>
+<input id="search-input-field" type="text" v-model.trim="searchQuery" placeholder="Search for sci-fi movies..." class="search-input" />
+<button @click="performSearch" class="button-blue">Search</button>
+</div>
+
+<div class="filter-row">
+<label for="rating-sort-filter" class="visually-hidden">Sort by rating</label>
+<select id="rating-sort-filter" v-model="filters.ratingSort" @change="resetYearSort" class="search-filter">
+<option value="">Rating</option>
+<option value="asc">Rating Ascending</option>
+<option value="desc">Rating Descending</option>
+</select>
+<label for="year-sort-filter" class="visually-hidden">Sort by release date</label>
+<select id="year-sort-filter" v-model="filters.yearSort" @change="resetRatingSort" class="search-filter">
+<option value="">Release Date</option>
+<option value="asc">Release Date Ascending</option>
+<option value="desc">Release Date Descending</option>
+</select>
+<label for="genre-filter" class="visually-hidden">Filter by genre</label>
+<select id="genre-filter" v-model="filters.genre" class="search-filter">
+<option value="">Genre</option>
+<option v-for="genre in uniqueGenres" :value="genre.id">{{ genre.name }}</option>
+</select>
+</div>
+</div>
+
+<div id="search-results-container" aria-live="polite">
+    <div v-if="isLoading" class="loading-message"><h2>Searching...</h2></div>
+    <div v-else-if="error" class="error-message"><h2>Error</h2><p>{{ error }}</p></div>
+
+    <div v-else-if="filteredAndSortedResults.length > 0">
+        <ul class="movie-grid">
+            <li v-for="movie in filteredAndSortedResults" :key="movie.id" class="movie-item default-border">
+                <a :href="'./movie-details.html?id=' + movie.id" style="text-decoration: none; color: inherit;">
+                    <img :src="movie.poster_path ? tmdbImageBaseUrl + movie.poster_path : './images/poster_01.jpg'" :alt="movie.title + ' Poster'" />
+                    <h3>{{ movie.title }}</h3>
+                    <p v-if="movie.overview"><strong>Synopsis:</strong> {{ movie.overview.substring(0, 100) + (movie.overview.length > 100 ? '...' : '') }}</p>
+                    <p v-if="movie.vote_average"><strong>Rating:</strong> {{ movie.vote_average }} / 10</p>
+                    <p v-if="movie.release_date"><strong>Release Date:</strong> {{ movie.release_date }}</p>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div v-else-if="searchedOnce && filteredAndSortedResults.length === 0" class="no-results-message">
+        <p>No movies found for your search query.</p>
+    </div>
+</div>
+</main>
+</body>
+</html>

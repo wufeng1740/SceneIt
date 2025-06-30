@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="./images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SceneIt: Search Less, Watch More</title>
+  <link rel="stylesheet" href="stylesheets/main.css" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="./scripts/client_auth.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <style>
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: left;
+      padding-top: 2em;
+    }
+
+    #signup-container,
+    #login-container {
+      width: 30em;
+    }
+
+    button {
+      margin-top: 1.5em;
+    }
+
+    .error {
+      background: #dc2626;
+      color: white;
+      border-radius: 6px;
+      border: 1px solid #dc2626;
+      font-weight: bold;
+    }
+  </style>
+
+  <script type="module">
+    const {createApp} = Vue;
+    import Navbar from "./components/Navbar.js";
+
+    const nav = createApp({
+      components: {
+        Navbar,
+      },
+    });
+    nav.mount("#navbar");
+  </script>
+</head>
+
+<body>
+  <div id="navbar">
+    <navbar />
+  </div>
+
+  <main id="content">
+    <section id="login-container">
+      <h1>Log into SceneIt</h1>
+      <p>Enter your details to log into SceneIt</p>
+
+      <form class="default-border">
+        <base-input label="Username" id="username" type="text" required v-model="username"
+          v-model:error="errors.username"></base-input>
+        <base-input label="Password" id="password" type="password" required v-model="password"
+          v-model:error="errors.password"></base-input>
+
+        <button id="btn-login" class="btn-primary" @click="loginUser" type="button">
+          Login
+        </button>
+        <p>Don't have an account? <a href="./signup.html">Sign up</a></p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module">
+    import BaseInput from "./components/BaseInput.js";
+    const {createApp} = Vue;
+
+    createApp({
+      components: {
+        BaseInput,
+      },
+      data() {
+        return {
+          username: "",
+          password: "",
+          errors: {
+            username: "",
+            password: "",
+          },
+        };
+      },
+      methods: {
+        validateInput() {
+          let validationPassed = true;
+          if (this.username === "") {
+            validationPassed = false;
+            this.errors.username = "Username cannot be empty";
+          }
+
+          if (this.password === "") {
+            validationPassed = false;
+            this.errors.password = "Password cannot be empty";
+          }
+
+          return validationPassed;
+        },
+        async loginUser() {
+          // Check input & then send request
+          if (this.validateInput()) {
+            try {
+              // login function throws an error if login attempt fails
+              const user = await login(this.username, this.password);
+              if (user.username) {
+                window.location.replace("/index.html");
+              }
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          }
+        },
+      },
+    }).mount("#content");
+  </script>
+  <script src="./scripts/toaster.js"></script>
+</body>
+
+</html>

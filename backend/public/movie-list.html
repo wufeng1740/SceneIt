@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="./images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Movie List</title>
+  <link rel="stylesheet" href="stylesheets/main.css" />
+  <link rel="stylesheet" href="stylesheets/movie-list.css" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style scoped>
+    .info-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      justify-content: center;
+      background-color: whitesmoke;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      gap: 10px;
+      margin: 20px;
+    }
+
+    body.dark .info-panel {
+      background-color: #1e1e1e;
+    }
+
+    textarea {
+      background-color: whitesmoke;
+    }
+
+    body.dark textarea {
+      background-color: #42414d;
+      color: white;
+    }
+
+    .info-panel hr {
+      width: 100%;
+      border: 0.5px solid darkgray;
+      margin: 5px 0;
+    }
+
+    .edit-panel {
+      /* display: none; */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      padding: 20px;
+      transform: translate(-50%, -50%);
+      background: var(--light-blue);
+      border: 1px solid #000000;
+      z-index: 1001;
+      border-radius: 15px;
+      gap: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.dark .edit-panel {
+      background: #1e1e1e;
+    }
+
+    .editUserForm {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 0px;
+    }
+
+    .editUserForm div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .editUserForm div label {
+      width: 120px;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+
+    .buttons-space {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: left;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .editUserForm div input {
+      flex: 1;
+      /* max-width: 200px; */
+    }
+
+    .editUserForm div textarea {
+      flex: 1;
+      height: 100px;
+      padding: 0.75em;
+      /* max-width: 200px; */
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* background-color: rgba(255, 0, 0, 0.5); */
+      z-index: 9999;
+      pointer-events: all;
+    }
+
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* when width <= 600px */
+    @media (max-width: 600px) {
+      .edit-panel {
+        width: 90%;
+        height: 90%;
+        overflow-y: auto;
+      }
+
+      .editUserForm div {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .editUserForm div input {
+        width: 100%;
+      }
+
+      .editUserForm div textarea {
+        width: 100%;
+      }
+    }
+  </style>
+  <script type="module">
+    const {createApp} = Vue;
+    import Navbar from "./components/Navbar.js";
+
+    const nav = createApp({
+      components: {
+        Navbar,
+      },
+    });
+    nav.mount("#navbar");
+  </script>
+</head>
+
+<body>
+  <!-- Nav Bar on Top -->
+  <div id="navbar">
+    <navbar />
+  </div>
+
+  <div id="app">
+    <div class="info-panel">
+      <h3>My Movie Lists</h3>
+      <div>
+        <span v-for="list in movieLists" :key="list.list_id"
+          @click="setSelectedListId(list.list_id); fetchListMoviesById(list.list_id)"
+          :class="['tag', { selected: selectedListId === list.list_id }]">{{list.name || "N/A"}}</span>
+        <button title="Create a new list" class="tag" popovertarget="movie-list-popover-form">
+          &nbsp+&nbsp
+        </button>
+
+        <!-- Add User List Modal -->
+        <movie-list-popover-form 
+            @list-added="(list) => { movieLists.push(list); setSelectedListId(list.list_id) }" 
+            id="movie-list-popover-form" 
+            title="Add a new list"
+            username="getCookie('username')" 
+            input-mode="add">
+        </movie-list-popover-form>
+      </div>
+    </div>
+        
+    <div class="info-panel" v-if="selectedList">
+      <div>
+          <div style="display: flex; flex-direction: row; justify-content: space-between">
+              <span>
+                <h3>{{ selectedList.name }}</h3>
+                <p><em>{{ selectedList.description }}</em></p>
+              </span>
+              <span> 
+              <button type="button" class="btn-ghost" style="margin-right: 1em" @click="deleteList(selectedListId)">{{ this.deleteButtonText }}</button>
+                <button popovertarget="edit-movie-list-popover-form" type="button" class="btn-primary">
+                  Edit List
+                </button>
+              <span>
+          </div>
+          <!-- Edit User List Modal -->
+          <movie-list-popover-form 
+              @list-updated="(updatedList) => {
+                this.movieLists = this.movieLists.filter(
+                  (list) => list.list_id !== updatedList.list_id
+                )
+                this.movieLists = [ ...movieLists, updatedList ]
+              }"
+              id="edit-movie-list-popover-form" 
+              title="Edit list" 
+              username="getCookie('username')" 
+              input-mode="edit" 
+              :selected-list="this.selectedList">
+          </movie-list-popover-form>
+      </div>
+      <hr />
+      <!-- the list details here -->
+      <!-- Movie search results grid -->
+      <ul v-if="movies.length > 0" class="movie-grid">
+        <li v-for="movie in movies" :key="movie.id" class="movie-item">
+          <a :href="'./movie-details.html?id=' + movie.id" style="text-decoration: none; color: inherit">
+            <img :src="movie.thumbnail || movie.poster_url || './images/poster_01.jpg'"
+              :alt="movie.title + ' Poster'" />
+            <h3>{{ movie.title }}</h3>
+            <p v-if="movie.release_date">({{ movie.release_date }})</p>
+          </a>
+        </li>
+      </ul>
+      <div v-else>No movies in this list.</div>
+    </div>
+
+    <div v-if="isLoading" class="loading">
+      <div style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+          ">
+        <div style="
+              padding: 30px 50px;
+              border-radius: 10px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+              background-color: var(--light-blue);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            ">
+          <h1>loading...</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import MovieListPopoverForm from "./components/MovieListPopoverForm.js";
+    import {getCookie} from "./scripts/cookie-helpers.js";
+
+    const app = Vue.createApp({
+      components: {
+        MovieListPopoverForm,
+      },
+      data() {
+        return {
+          user: null,
+          // for panels
+          editPanel: false,
+          isAddList: false,
+          isLoading: false,
+          // for user panel
+          user_id: null,
+          avatar: "/avatars/default.png",
+          username: "",
+          // for user list
+          movieLists: [],
+          selectedListId: null,
+          movies: [],
+          // for list panel
+          listName: "",
+          listDescription: "",
+          // for dynamic delete + confirm delete
+          deletingList: false
+        };
+      },
+      computed: {
+        selectedList() {
+          if (!this.selectedListId) {
+            return null
+          } else {
+            const foundList = this.movieLists.find(
+              (list) => list.list_id === this.selectedListId
+            );
+
+            return foundList;
+          }
+        },
+        deleteButtonText() {
+          return !this.deletingList ? "Delete List" : "Confirm Delete"
+        }
+      },
+      methods: {
+        async fetchUserInfo() {
+          this.isLoading = true;
+          console.log("Fetching user info...");
+          try {
+            const response = await fetch("/api/users/info");
+            // redirect to login page if not authenticated
+            if (response.status === 401) {
+              throw new Error("You must be logged in");
+              window.location.href = "/login.html";
+              return;
+            }
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                data.error || "Error occurred fetching user info",
+              );
+            }
+
+            console.log("User info fetched:", data);
+
+            const userData = {
+              ...data.user,
+              date_of_birth: data.user.date_of_birth
+                ? new Date(data.user.date_of_birth)
+                  .toISOString()
+                  .split("T")[0]
+                : null,
+              isAdmin: data.user.isAdmin === 1 ? true : false, // Convert to boolean
+            };
+            this.user = userData;
+            if (this.user != null) {
+              this.resetData_editUser(this.user);
+            } else {
+              this.resetData();
+            }
+          } catch (error) {
+            showToast(error, "error");
+          }
+          if (!this.editPanel) {
+            this.isLoading = false;
+          }
+        },
+        resetData() {
+          this.user_id = null;
+          this.avatar = "/avatars/default.png";
+          this.username = "";
+        },
+        resetData_editUser(user) {
+          this.user_id = user.user_id;
+          this.avatar = user.avatar || "/avatars/default.png";
+          this.username = user.username || "";
+        },
+        resetData_addList() {
+          this.listName = "";
+          this.listDescription = "";
+        },
+        resetData_editList() {
+          for (const list of this.movieLists) {
+            if (list.list_id === this.selectedListId) {
+              console.log("Editing list:", list);
+              this.listName = list.name || "";
+              this.listDescription = list.description || "";
+              return;
+            }
+          }
+        },
+        async fetchMovieList() {
+          console.log("Syncing movie list...");
+          try {
+            const response = await fetch("/api/lists/show", {
+              method: "GET",
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch movie lists: ${data.error}`,
+              );
+            }
+            this.movieLists = data.movie_lists || [];
+            console.log("Movie list synced:", this.movieLists);
+          } catch (error) {
+            showToast(error, "error");
+          }
+        },
+        getSelectedListId() {
+          const params = new URLSearchParams(window.location.search);
+          this.selectedListId = Number(params.get("list_id")) || null;
+          console.log("Selected List ID =", this.selectedListId);
+        },
+        setSelectedListId(listId) {
+          const params = new URLSearchParams(window.location.search);
+          params.set("list_id", listId);
+          const newQuery = params.toString(); // eg. "id=456&foo=bar"
+          const newUrl = window.location.pathname + "?" + newQuery;
+          window.history.replaceState(null, "", newUrl);
+          this.selectedListId = listId;
+          console.log("Updated Selected List ID =", this.selectedListId);
+        },
+        async fetchListMoviesById(listId) {
+          console.log(`Fetching movie list with ID: ${listId}`);
+          try {
+            const response = await fetch(`/api/lists/list/${listId}`, {
+              method: "GET",
+              credentials: "include",
+            });
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch movie list: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            this.movies = data || [];
+            // console.log('Movie list fetched:', this.movies);
+          } catch (error) {
+            showToast(error, "error");
+          }
+        },
+        async deleteList(deleteListId) {
+          // If deletingList is true then we know they've clicked "Confirm Delete"
+          if (this.deletingList) {
+            try {
+              const response = await fetch(`/api/lists/delete/${deleteListId}`, {
+                method: "DELETE"
+              });
+
+              if (!response.ok) {
+                const { error } = await response.json();
+                throw new Error(error);
+              }
+              const data = await response.json();
+
+              if (data.success) {
+                showToast("List deleted successfully", "success");
+                this.movieLists = this.movieLists.filter((list) => list.list_id !== deleteListId);
+                this.setSelectedListId(this.movieLists[0]?.list_id || null);
+              }
+            } catch (error) {
+                showToast("Failed to delete list", "error");
+            }
+          }
+
+          // Toggle delete status - and trigger button text change
+          this.deletingList = !this.deletingList;
+        }
+      },
+      mounted() {
+        console.log("Account page loaded");
+        this.fetchUserInfo();
+        this.fetchMovieList();
+        this.getSelectedListId();
+        if (this.selectedListId)
+          this.fetchListMoviesById(this.selectedListId);
+      },
+      watch: {},
+    });
+
+    app.mount("#app");
+  </script>
+  <script src="./scripts/toaster.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+</body>
+
+</html>

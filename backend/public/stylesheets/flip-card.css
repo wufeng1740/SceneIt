@@ -1,0 +1,148 @@
+
+.flip-card-container {
+    width: 60vw; /* Or your desired responsive width */
+    max-width: 400px; /* Max width of the card */
+    height: calc(60vw * 1.5); /* Maintain aspect ratio */
+    max-height: calc(400px * 1.5);
+    perspective: 1500px;
+    margin: 20px auto; /* Centers the card */
+    position: relative; /* Added in case title/bg poster need to align, can be reviewed */
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.flip-card-container.is-flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.flip-card-front {
+    background-color: #222; /* Fallback */
+    color: white;
+    justify-content: center; /* Center the image if it doesn't fill with object-fit:contain */
+    align-items: center;
+}
+
+.flip-card-front .poster_main_on_card { /* This class is on the <img> tag itself */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Or 'contain' */
+    display: block;
+    /* No border-radius needed here if .flip-card-front has overflow:hidden and border-radius */
+}
+
+.flip-card-back {
+    background-color: white;
+    color: #333;
+    transform: rotateY(180deg);
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    align-items: flex-start; /* Align content to top */
+    text-align: left;
+}
+
+.flip-card-back .close-details-button {
+    position: absolute;
+    top: 10px;
+    right: 15px; /* Adjusted for consistency */
+    background: none;
+    border: none;
+    font-size: 2em;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+.flip-card-back .close-details-button:hover { color: #555; }
+
+.flip-card-back h3 { margin-top: 0; font-size: 1.5em; color: var(--dark-blue, #003C64); margin-bottom: 15px;}
+.flip-card-back .details-poster-small {
+    max-width: 100px; float: left; margin-right: 15px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #eee;
+}
+.flip-card-back p { font-size: 0.95em; line-height: 1.6; margin-bottom: 0.8em; clear: both; }
+.flip-card-back p strong { color: #555; }
+.flip-card-back .genres-list { margin-top: 10px; margin-bottom: 15px; clear: both; }
+.flip-card-back .genres-list strong { display: block; margin-bottom: 5px; }
+.flip-card-back .genre-tag {
+    background-color: var(--light-grey, #E8EDF1); color: var(--dark-blue, #003C64); padding: 5px 12px;
+    border-radius: 15px; font-size: 0.8em; margin-right: 6px; margin-bottom: 6px; display: inline-block;
+}
+.details-loading, .details-error, .no-details { text-align: center; padding: 30px; font-size: 1.1em; color: #777; }
+.details-error { color: red; }
+
+
+/* Dark Mode Styles for Flip Card Back */
+body.dark .flip-card-back {
+    background-color: var(--dark-blue); /* Use your existing dark blue variable */
+    color: var(--light-grey);          /* Default text color for the card back content */
+    border: 1px solid var(--grey);     /* Optional: Add a subtle border if desired */
+}
+
+body.dark .flip-card-back h3 {
+    color: white; /* Ensure the movie title is bright white */
+}
+
+body.dark .flip-card-back p {
+    color: var(--light-grey); /* Ensure paragraph text (synopsis content, values) is light */
+}
+
+body.dark .flip-card-back p strong {
+    color: var(--light-blue);  /* Make labels ('Synopsis:', 'Rating:') a lighter, distinct color */
+                               /* Alternatively, use 'white' or 'var(--light-grey)' if you prefer */
+}
+
+body.dark .flip-card-back .close-details-button {
+    color: var(--light-grey); /* Make the close button lighter */
+}
+body.dark .flip-card-back .close-details-button:hover {
+    color: white;
+}
+
+body.dark .flip-card-back .genre-tag {
+    background-color: var(--grey);         /* Darker background for genre tags */
+    color: var(--light-grey);             /* Light text for genre tags */
+    border: 1px solid var(--light-blue);  /* Optional: add a border */
+}
+
+body.dark .flip-card-back .details-loading,
+body.dark .flip-card-back .details-error,
+body.dark .flip-card-back .no-details {
+    color: var(--light-grey); /* Ensure loading/error messages are also light */
+}
+
+body.dark .flip-card-back .details-error {
+    color: #ff8a80; /* A light red for errors in dark mode */
+}
+
+
+/* This is the button class for the view details button on the card back */
+.flip-card-back .view-details-button-card {
+    display: inline-block; /* Allows it to behave like a button but flow with text if needed */
+    margin-top: 20px;      /* Space above the button */
+    margin-bottom: 10px;   /* Space below the button, ensuring it's not flush with the card edge */
+    padding: 10px 20px;    /* Re-applying padding here to ensure it overrides any generic anchor padding */
+    text-decoration: none; /* Explicitly remove underline for anchor styled as button */
+    text-align: center;    /* Center text within the button */
+    /* The 'button-blue' class will handle background, text color, border-radius, etc. */
+}

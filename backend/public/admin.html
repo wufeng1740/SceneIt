@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="./images/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style scoped>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header div {
+            display: flex;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            padding: 20px;
+        }
+
+        th {
+            background-color: #75C9F2;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .wrap-text {
+          white-space: normal;
+          word-break: break-all;
+          overflow-wrap: anywhere;
+        }
+
+        .edit-panel {
+            /* display: none; */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            padding: 20px;
+            transform: translate(-50%, -50%);
+            background: var(--light-blue);
+            border: 1px solid #000000;
+            z-index: 1001;
+            border-radius: 15px;
+            gap: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark .edit-panel{
+            background: #1e1e1e;
+        }
+
+        .editUserForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 0px;
+        }
+
+        .editUserForm div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editUserForm div label {
+            width: 120px;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .buttons-space {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .editUserForm div input {
+            flex: 1;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: rgba(255, 0, 0, 0.5); */
+            z-index: 9999;
+            pointer-events: all;
+        }
+        /* AI-assisted snippet: ChatGPT suggested using @media for responsible design */
+        @media (max-width: 600px) {
+            .edit-panel {
+                width: 90%;
+                height: 90%;
+                overflow-y: auto;
+            }
+            .editUserForm div {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .editUserForm div input {
+                width: 100%;
+            }
+        }
+    </style>
+    <script type="module">
+      const { createApp } = Vue;
+      import Navbar from "./components/Navbar.js";
+
+      const nav = createApp({
+        components: {
+          Navbar,
+        },
+      });
+      nav.mount("#navbar");
+    </script>
+</head>
+
+<body>
+<!-- Nav Bar on Top -->
+<div id="navbar">
+    <navbar />
+</div>
+
+<div id="app">
+    <div class="header">
+        <h2>User List</h2>
+        <div>
+            <button type="button" @click="isAddUser=true; editPanel=true; resetData()" class="button-blue">add</button>
+            <button type="button" @click="fetchUsers" class="button-blue">refresh</button>
+        </div>
+    </div>
+    <table border="0">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Avatar</th>
+                <th>Name</th>
+                <th v-if="isWideScreen">Email</th>
+                <th v-if="isWideScreen">Address</th>
+                <th v-if="isWideScreen">Date of birth</th>
+                <th v-if="isWideScreen">isAdmin</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="user in users" :key="user.id">
+                <td>{{ user.user_id }}</td>
+                <td><img :src="user.avatar" alt="Avatar" width="24"></td>
+                <td>{{ user.username }}</td>
+                <td v-if="isWideScreen" class="wrap-text">{{ user.email }}</td>
+                <td v-if="isWideScreen">{{ user.address }}</td>
+                <td v-if="isWideScreen">{{ user.date_of_birth }}</td>
+                <td v-if="isWideScreen">{{ user.isAdmin ? "✅" : "-" }}</td>
+                <td><button type="button" @click="isAddUser=false; editPanel=true; resetData_editUser(user)" class="button-blue">Edit</button></td>
+                <td><button type="button" @click="deleteUser(user.user_id)" class="button-blue">Delete</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div v-if="editPanel" class="overlay">
+        <div class="edit-panel">
+            <h2>{{ isAddUser ? 'Add User' : 'Edit User' }}</h2>
+            <form id="editUserForm" class="editUserForm" @submit.prevent="isAddUser ? addUser() : editUser(user_id)">
+                <div v-if="!isAddUser" >
+                    <label for="user_id">User_id</label>
+                    <input v-model="user_id" type="text" id="user_id" name="user_id" readonly style="background-color: rgb(200, 200, 200); color: rgb(75, 75, 75);">
+                </div>
+                <div>
+                    <label for="userAvatar">Avatar URL:</label>
+                    <input v-model="avatar" type="text" id="userAvatar" name="avatar" placeholder="/avatars/default.png">
+                </div>
+                <div>
+                    <label for="userName">User Name:</label>
+                    <input v-model="username" type="text" id="userName" name="username" required @input="checkUsernameUnique" :style="{ backgroundColor: isUsernameUnique ? '' : 'pink' }">
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input v-model="password" type="text" id="password" name="password" required>
+                </div>
+                <div>
+                    <label for="date_of_birth">Date of Birth:</label>
+                    <input v-model="date_of_birth" type="date" id="date_of_birth" name="date_of_birth">
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input v-model="address" type="text" id="address" name="address">
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input v-model="email" type="email" id="email" name="email">
+                </div>
+                <div>
+                    <label for="isAdmin">isAdmin:</label>
+                    <input v-model="isAdmin" type="checkbox" id="isAdmin" name="isAdmin">
+                </div>
+                <div class="buttons-space">
+                    <button type="submit" @click="isLoading = true" class="button-blue">{{ isAddUser ? 'Add' : 'Save' }}</button>
+                    <button type="button" @click="editPanel=false" class="button-blue">Cancel</button>
+                </div>
+                <p v-if="isLoading"> loading... </p>
+            </form>
+        </div>
+    </div>
+    <div v-if="isLoading" class="loading">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div style="padding: 30px 50px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: var(--light-blue); display: flex; flex-direction: column; align-items: center;">
+                <h1>loading...</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                users: [],
+                editPanel: false,
+                isAddUser: false,
+                isLoading: false,
+                // for user panel
+                user_id: null,
+                avatar: '/avatars/default.png',
+                username: '',
+                password: '',
+                date_of_birth: null,
+                address: '',
+                email: '',
+                isAdmin: false,
+                isUsernameUnique: true,
+                // for responsive design
+                isWideScreen: true,
+            }
+        },
+        methods: {
+            async fetchUsers() {
+                this.isLoading = true;
+                console.log('Fetching users...');
+                try {
+                    const response = await fetch('http://localhost:3000/admin/getuserslist');
+                    if (response.status === 401) {
+                        alert('❌ Unauthorized access! ❌');
+                        window.location.href = '/login.html'; // Redirect to login page
+                        return;
+                    }
+                    else if (response.status === 403) {
+                        alert('❌ You are not authorized to access this page! ❌');
+                        window.location.href = '/account.html'; // Redirect to account page
+                        return;
+                    }
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    this.users = data.map(user => ({
+                        ...user,
+                        date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : null,
+                        isAdmin: user.isAdmin === 1? true : false // Convert to boolean
+                    }));
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
+                if (!this.editPanel) {
+                    this.isLoading = false;
+                }
+            },
+            addUser() {
+                console.log('Add new user');
+                this.isLoading = true;
+                // check if username is unique
+                if (!this.checkUsernameUnique()) {
+                    alert('❌ Username already exists! ❌');
+                    return;
+                }
+                fetch('http://localhost:3000/admin/adduser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username:      this.username,
+                        avatar:        this.avatar,
+                        password:      this.password,
+                        date_of_birth: this.date_of_birth,
+                        address:       this.address,
+                        email:         this.email,
+                        isAdmin:       this.isAdmin,
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error');
+                    // this.isLoading = false;
+                    return response.json();
+                })
+                .then(data => {
+                    this.fetchUsers(); // refresh user list
+                    alert('✅ User added successfully!');
+                    this.editPanel = false;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    console.error('Error adding user:', error);
+                });
+            },
+
+            editUser(userID) {
+                console.log('Edit user: ' + userID);
+                this.isLoading = true;
+                // check if username is unique
+                if (!this.checkUsernameUnique()) {
+                    alert('❌ Username already exists! ❌');
+                    return;
+                }
+                fetch('http://localhost:3000/admin/edituser', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id:       this.user_id,
+                        username:      this.username,
+                        avatar:        this.avatar,
+                        password:      this.password,
+                        date_of_birth: this.date_of_birth,
+                        address:       this.address,
+                        email:         this.email,
+                        isAdmin:       this.isAdmin,
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error');
+                    // this.isLoading = false;
+                    return response.json();
+                })
+                .then(data => {
+                    this.fetchUsers(); // refresh user list
+                    alert('✅ User edited successfully!');
+                    this.editPanel = false;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    console.error('Error editing user:', error);
+                });
+            },
+
+            deleteUser(userId) {
+                console.log('Delete user: ' + userId);
+                this.isLoading = true;
+                // confirm panel
+                if (!confirm('delete the user_id = ' + userId + ' ?')) {
+                    return;
+                }
+                console.log('Delete user with ID:', userId);
+                fetch('http://localhost:3000/admin/deleteuser', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error');
+                    return response.json();
+                })
+                .then(data => {
+                    alert('✅ User deleted successfully!');
+                    this.fetchUsers(); // refresh user list
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                });
+                this.isLoading = false;
+            },
+            resetData(){
+                this.user_id = null;
+                this.avatar = '/avatars/default.png';
+                this.username = '';
+                this.password = '';
+                this.date_of_birth = null;
+                this.address = '';
+                this.email = '';
+                this.isAdmin = false;
+                this.isUsernameUnique = true;
+            },
+            resetData_editUser(user){
+                this.user_id = user.user_id;
+                this.avatar = user.avatar;
+                this.username = user.username;
+                this.password = user.password;
+                this.date_of_birth = user.date_of_birth;
+                this.address = user.address;
+                this.email = user.email;
+                this.isAdmin = user.isAdmin;
+                this.isUsernameUnique = true;
+            },
+            checkUsernameUnique() {
+                console.log('Checking username uniqueness...');
+                for (const user of this.users) {
+                    if (user.username === this.username && user.user_id !== this.user_id) {
+                        this.isUsernameUnique = false;
+                        return false;
+                    }
+                }
+                this.isUsernameUnique = true;
+                return true;
+            },
+            checkWidth() {
+                this.isWideScreen = window.innerWidth >= 800;
+            }
+        },
+        mounted() {
+            console.log('Admin page loaded');
+            this.fetchUsers();
+            this.checkWidth();
+            // AI-assisted snippet: ChatGPT suggested using window.addEventListener for responsive design
+            window.addEventListener('resize', this.checkWidth);
+        },
+        // AI-assisted snippet: ChatGPT suggested using BeforeUnloadEvent to clean up event listeners
+        BeforeUnloadEvent() {
+            window.removeEventListener('resize', this.checkWidth);
+        }
+    });
+
+    app.mount('#app');
+</script>
+
+</body>
+</html>

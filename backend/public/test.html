@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Test Page</title>
+        <link rel="stylesheet" href="main.css">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script src="db_addMovie.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <h1>Test</h1>
+            <button type="button" @click="handleClick">Click Me</button>
+        </div>
+        <script>
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        message: 'Hello Vue!'
+                    }
+                },
+                methods: {
+                    handleClick() {
+                        console.log('Button clicked!');
+                        // Call the function from db_addMovie.js
+                        addSciFiMovies();
+                    }
+                }
+            });
+
+            app.mount('#app');
+        </script>
+    </body>
+</html>

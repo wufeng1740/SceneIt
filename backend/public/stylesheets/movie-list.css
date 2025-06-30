@@ -1,0 +1,92 @@
+/* Popular Movies horizontal scroll area */
+.popular-movies-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-top: 10px;
+}
+
+.popular-movies-scroll {
+    display: flex;
+    gap: 10px;
+    animation: scrollLeft 20s linear infinite;
+}
+
+.popular-movie-card {
+    flex: 0 0 auto;
+    width: 150px;
+    text-align: center;
+}
+
+.popular-movie-card img {
+    width: 100%;
+    border-radius: 4px;
+}
+
+.popular-movie-card h4 {
+    margin: 5px 0;
+    font-size: 0.9em;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+@keyframes scrollLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Tag styles */
+.tag {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.tag:hover {
+    background-color: var(--light-blue);
+}
+
+.tag.selected {
+    background-color: var(--light-blue);
+    color: black;
+}
+
+/* Search result grid */
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.movie-item img {
+    width: 100%;
+    border-radius: 4px;
+}
+
+/* Tag styles for dark mode */
+body.dark .tag {
+    border: 1px solid #4f5b62;
+    background-color: #29434e;
+    color: #cbd5e1;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark .tag:hover {
+    background-color: #3a5b6a;
+}
+
+body.dark .tag.selected {
+    background-color: var(--light-blue);
+    color: black;
+}
+
+/* Popular movies horizontal scroll area for dark mode */
+body.dark .popular-movie-card h4 {
+    color: #f0f0f0;
+}

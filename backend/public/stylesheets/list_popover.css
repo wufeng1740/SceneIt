@@ -1,0 +1,40 @@
+.popover-bg{
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  top: 0;
+  left: 0;
+  z-index: 11;
+}
+
+.movie-list-form-container {
+  z-index: 12;
+  background-color: var(--bg-light-blue);
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: var(--border-radius-rounded);
+  border: none;
+  min-width: 24vw;
+  margin: auto;
+
+  & form {
+    margin-top: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  & button {
+    height: var(--btn-height);
+    margin-top: 1em;
+  }
+
+  & .button-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    gap: 1em;
+  }
+}
+

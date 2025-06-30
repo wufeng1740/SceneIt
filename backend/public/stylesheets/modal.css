@@ -1,0 +1,285 @@
+.button-grey {
+  background-color: var(--grey-200, #B0BEC5); /* A light grey */
+  color: var(--dark-blue, #003C64); /* Dark text */
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--grey-300, #90A4AE); /* Optional border */
+  cursor: pointer;
+}
+
+.button-grey:hover {
+  background-color: var(--grey-300, #90A4AE);
+}
+
+body.dark .button-grey {
+  background-color: var(--grey-500, #607D8B);
+  color: white;
+  border-color: var(--grey-300, #90A4AE);
+}
+
+body.dark .button-grey:hover {
+  background-color: var(--grey-300, #90A4AE);
+}
+
+
+/* Basic Modal Styles - Consider moving to a separate CSS file */
+.interaction-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure modal is on top */
+}
+
+.interaction-modal {
+    background-color: var(--bg-light-blue, white); /* Use theme variable or fallback */
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+}
+
+body.dark .interaction-modal {
+    background-color: var(--dark-blue); /* Dark mode background */
+    color: var(--light-grey);
+}
+
+
+.interaction-modal .modal-title {
+    font-size: 1.5em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--dark-blue); /* Theme color */
+}
+
+body.dark .interaction-modal .modal-title {
+    color: white;
+}
+
+.interaction-modal .modal-question {
+    font-size: 1.1em;
+    margin-bottom: 25px;
+}
+
+.interaction-modal .modal-actions {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 10px; /* Space between buttons */
+}
+
+.interaction-modal .modal-actions button {
+    padding: 12px 20px;
+    font-size: 1em;
+    width: 100%; /* Make buttons full width of modal actions container */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Style for buttons to ensure they adopt the theme */
+.interaction-modal .modal-actions .button-blue,
+.interaction-modal .modal-actions .button-grey, /* Add if you create this class */
+.interaction-modal .modal-actions .button-red {
+    /* Specific overrides if .button-blue etc. don't work as expected due to specificity */
+}
+
+
+.interaction-modal .modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    color: var(--grey); /* Theme color */
+}
+body.dark .interaction-modal .modal-close-button {
+    color: var(--light-grey);
+}
+
+
+/*  Modal properties for creating a list*/
+
+.interaction-modal .modal-list-items {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px; /* Added margin for spacing */
+    margin-bottom: 20px;
+    max-height: 180px; /* Adjusted height */
+    overflow-y: auto;
+    border: 1px solid var(--border-gray); /* Border around the list area */
+    border-radius: 4px;
+}
+
+.interaction-modal .modal-list-items li {
+    padding: 12px 15px; /* Increased padding */
+    border-bottom: 1px solid var(--border-gray); /* Separator for items */
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.interaction-modal .modal-list-items li:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+/* Hover effect for light mode */
+.interaction-modal .modal-list-items li:hover {
+    background-color: var(--blue-100); /* Lighter blue for hover */
+    color: var(--dark-blue); /* Ensure text is readable */
+}
+
+/* Dark Mode styles for list items */
+body.dark .interaction-modal .modal-list-items {
+    border-color: var(--grey-500); /* Darker border for dark mode */
+}
+
+body.dark .interaction-modal .modal-list-items li {
+    border-bottom-color: var(--grey-500); /* Darker separator */
+    color: var(--light-grey); /* Light text for dark mode */
+}
+
+body.dark .interaction-modal .modal-list-items li:hover {
+    background-color: var(--blue-500); /* Theme blue for hover in dark mode */
+    color: white;
+}
+
+/* Styling for the form within the modal */
+.interaction-modal .modal-form {
+    margin-top: 15px;
+}
+
+.interaction-modal .modal-form .input_fieldset { /* Targets BaseInput's wrapper */
+    margin-bottom: 15px;
+}
+
+.interaction-modal .modal-form .input_fieldset label {
+    text-align: left;
+    display: block;
+    margin-bottom: 5px; /* Space between label and input */
+    font-weight: 500; /* Consistent label weight */
+}
+
+/* Ensure modal actions within the form are spaced correctly if not already handled */
+.interaction-modal .modal-form .modal-actions {
+    margin-top: 20px; /* Space above form action buttons */
+}
+
+/* Add this to ensure the input fields in the modal use appropriate dark mode styling if not already covered */
+body.dark .interaction-modal .modal-form input[type="text"] {
+  background-color: var(--grey-500); /* Or another suitable dark input background */
+  color: white;
+  border: 1px solid var(--grey-300);
+}
+
+/* Loading and error messages inside the list modal */
+.interaction-modal .loading-message,
+.interaction-modal .error-message {
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.interaction-modal .error-message {
+    color: var(--red-500); /* Or your theme's error color */
+    background-color: var(--red-100); /* Light red background */
+}
+
+body.dark .interaction-modal .error-message {
+    color: var(--red-200);
+    background-color: var(--red-500); /* Darker red background for dark mode */
+}
+
+
+/* Reset default form styling for forms specifically within .interaction-modal */
+.interaction-modal form.modal-form, /* Targeting form as direct child */
+.interaction-modal > div > form.modal-form { /* Targeting form nested one level deeper (current structure for create list) */
+    margin: 15px 0 0 0;
+    padding: 0;
+    width: 100%;
+    background-color: transparent; /* Crucial: The form itself should not have a background color */
+    box-shadow: none;   /* Remove any box-shadow from general form styles; modal handles shadow */
+    border: none;       /* Remove any borders from general form styling */
+    gap: 0;             /* Reset gap, rely on .input_fieldset margin for spacing between inputs */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure input fields within the modal form are spaced correctly */
+.interaction-modal form.modal-form .input_fieldset {
+    margin-bottom: 15px;
+}
+
+/* Optional: If the last input field needs different spacing before the action buttons */
+/* .interaction-modal form.modal-form .input_fieldset:last-of-type { */
+    /* margin-bottom: 20px; */ /* Example: more space before buttons */
+/* } */
+
+/* Labels within the modal form - inherit color and use existing BaseInput styling */
+.interaction-modal form.modal-form .input_fieldset label {
+    color: inherit; /* Ensures text color matches the modal's theme (light/dark) */
+    /* Other styles like text-align, display, margin-bottom
+       should be handled by BaseInput.js or existing modal styles */
+}
+
+/* Input elements themselves within the modal form */
+.interaction-modal form.modal-form .input_fieldset input.default-border {
+    /* Light mode: If inputs have an unexpected background from a general 'input' rule, reset it here: */
+    /* background-color: #fff; */ /* Or your theme's input background for light mode */
+
+    /* Dark mode for these inputs is already handled in index.html's embedded CSS:
+       body.dark .interaction-modal .modal-form input[type="text"] { ... }
+       Consider moving that rule here for better organization if using BaseInput.js consistently. */
+}
+
+/* Ensure the container for action buttons within the form is spaced nicely */
+.interaction-modal form.modal-form .modal-actions {
+    margin-top: 20px;
+    /* Other .modal-actions styles (flex properties, button gap) should apply as defined
+       for the general interaction modal */
+}
+
+
+/* In public/stylesheets/modal.css */
+
+/* Reset default form styling for forms specifically within .interaction-modal */
+.interaction-modal form.modal-form,
+.interaction-modal > div > form.modal-form { /* Handles direct or nested form */
+    margin: 15px 0 0 0;
+    padding: 0;
+    width: 100%;
+    background-color: transparent; /* Crucial: Prevents background "leak" from general form styles */
+    box-shadow: none;
+    border: none;
+    gap: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.interaction-modal form.modal-form .input_fieldset {
+    margin-bottom: 15px; /* Space between input groups */
+}
+
+.interaction-modal form.modal-form .input_fieldset label {
+    color: inherit; /* Ensures text color matches the modal's theme */
+    /* BaseInput.js or existing modal styles handle other label properties */
+}
+
+.interaction-modal form.modal-form .input_fieldset input.default-border {
+    /* Dark mode for these inputs is handled elsewhere (e.g., index.html or other CSS).
+       Consider centralizing input styling for modals if BaseInput.js is used consistently. */
+}
+
+.interaction-modal form.modal-form .modal-actions {
+    margin-top: 20px; /* Space above the form's action buttons */
+    /* General .modal-actions styles (flex, gap) apply */
+}

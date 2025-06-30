@@ -1,0 +1,116 @@
+/* try to keep W and H always matching screen size */
+.image-wrapper {
+  width: 100vw;
+  height: calc(100vh - var(--navbar-height));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.poster_main {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.poster_side {
+  max-width: 100%;
+  max-height: 100%;
+  width: calc((100vw - var(--image-width, 800px))/2);
+  height: 100%;
+}
+
+.poster_background {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100vw;
+  height: auto;
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(30px);
+  /* Full height */
+  height: 100%;
+  /* Center and scale the image nicely */
+  object-position: center;
+  object-fit: cover;
+}
+
+.verticle-bar { /* Or #homepage-icon-bar-global if you target by ID for positioning */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    padding: 10px 5px; /* Basic padding */
+    box-sizing: border-box;
+    width: fit-content; /* Or a fixed width */
+    /* Default positioning properties - these will be overridden by .outside/.inside logic if it exists */
+    /* or this could be the .outside logic directly */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10; /* Above background, potentially above card if not careful with context */
+    background-color: rgba(30,30,30,0.5); /* Example background */
+    border-radius: 8px;
+    transition: right 0.3s ease-in-out, left 0.3s ease-in-out;
+}
+/*
+.verticle-bar.inside {
+  position: absolute;
+  right: 0px;
+  height: calc((100vh - var(--navbar-height)));
+  width: fit-content;
+}
+*/
+
+/* This targets the icon bar with the 'inside' class (when isOutside is false) */
+.verticle-bar.inside, /* General for any verticle-bar.inside */
+#homepage-icon-bar-global.inside { /* Specific for this instance */
+    right: 15px; /* Example: Sticks to 15px from the right edge of the viewport */
+    left: auto; /* Important if transitioning from a left-based position */
+    /* Remove any height restrictions here if it was from the old .verticle-bar.inside */
+}
+
+/* For the "outside" state (when 'isOutside' is true, so no '.inside' class) */
+/* This logic needs to use --image-width */
+/* If no explicit ".outside" class, these styles apply to .verticle-bar or #homepage-icon-bar-global directly when NOT .inside */
+#homepage-icon-bar-global:not(.inside) {
+    /* This positions the bar to the right of the centered flip card */
+    /* Fallback for --image-width should match card's max-width or a sensible default */
+    right: calc((100vw - var(--image-width, 400px)) / 2 - 50px - 15px);
+    /* (100vw - card_width)/2 gives space on one side.
+       -50px is approx width of icon bar itself to shift its left edge there.
+       -15px is for a gap from the card.
+       This positions the RIGHT edge of the icon bar.
+       To position the LEFT edge of the icon bar at the RIGHT of the card:
+       left: calc((100vw + var(--image-width, 400px)) / 2 + 15px);
+       Choose one (left or right) for the .outside state. Let's stick to 'right' for consistency with .inside.
+    */
+    left: auto;
+}
+
+
+.control-panel {
+  position: absolute;
+  top: calc((100vh - var(--navbar-height))/2);
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  transition: right 0.3s;
+}
+
+.control-panel.outside {
+  right: calc((100vw - var(--image-width, 800px)) / 2 - 24px - 0.5em);
+}
+
+.control-panel.inside {
+  right: 0.5em;
+}

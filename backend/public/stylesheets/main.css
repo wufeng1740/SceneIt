@@ -1,0 +1,507 @@
+@import './base.css';
+@import './navbar.css';
+@import './poster.css';
+@import './form.css';
+@import './movie_list.css';
+@import './flip-card.css';
+@import './toaster.css';
+@import './list_popover.css';
+@import './modal.css';
+
+:root {
+  /* Colours */
+  --dark-blue: #003C64;
+  --grey: #7D7D7D;
+  --light-grey: #E8EDF1;
+  --light-blue: #75C9F2;
+  --border-gray: #d1d5dc;
+
+  /**
+  * Code Attribution: Material UI colors
+  * Source: https://materialui.co/colors
+  * Author: 7Span
+  **/
+  --red-100: #FFCDD2;
+  --red-200: #EF9A9A;
+  --red-300: #E57373;
+  --red-500: #F44336;
+  --orange-100: #FFE0B2;
+  --orange-200: #FFCC80;
+  --orange-300: #FFB74D;
+  --orange-500: #FF9800;
+  --blue-50: #E3F2FD;
+  --blue-100: #BBDEFB;
+  --blue-200: #90CAF9;
+  --blue-300: #64B5F6;
+  --blue-500: #2196F3;
+  --green-100: #C8E6C9;
+  --green-200: #A5D6A7;
+  --green-300: #81C784;
+  --green-500: #4CAF50;
+  --grey-50: #ECEFF1;
+  --grey-100: #CFD8DC;
+  --grey-200: #B0BEC5;
+  --grey-300: #90A4AE;
+  --grey-500: #607D8B;
+
+  /* General Styling */
+  --border-light: 1px solid;
+  --border-radius-rounded: 8px;
+
+  /* Form-related variables */
+  --input-height: 3em;
+  --btn-height: 3em;
+}
+
+#app {
+  margin: 0 auto;
+  font-weight: normal;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  width: 100%;
+  background-color: #e8edf1;
+  font-family: 'Segoe UI', 'Inter', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #000000;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+button {
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+a {
+  color: inherit;
+}
+
+.caption {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+}
+
+/* Container */
+/* General container for all pages */
+.container {
+  width: 90%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+/* General icon styling */
+.icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  color: var(--dark-blue);
+}
+.icon:hover {
+  color: var(--light-blue);
+}
+
+/* Buttons */
+.button-blue {
+  background-color: var(--dark-blue);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.button-blue:hover {
+  background-color: var(--light-blue); /* Default hover for light mode */
+  color: black; /* Text might need to change if background becomes very light */
+}
+
+.button-primary:hover {
+  background-color: var(--light-blue);
+}
+
+.button-gray {
+  background-color: var(--grey);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.button-secondary:hover {
+  background-color: #4b5563;
+}
+
+.button-red {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #dc2626;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.button-danger:hover {
+  background-color: #fecaca;
+}
+
+/* pagination*/
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  gap: 10px;
+}
+
+.pagination button {
+  width: 36px;
+  height: 36px;
+  background-color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background-color: #003C64;
+  color: white;
+}
+
+.default-border {
+  border-radius: var(--border-radius-rounded);
+  border: var(--border-light);
+  border-color: var(--border-gray);
+}
+
+
+/* Dark Mode */
+body.dark {
+  background-color: var(--dark-blue);
+  color: white;
+}
+
+body.dark .icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  color: white;
+}
+
+body.dark .icon:hover {
+  color: var(--light-blue);
+}
+
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark p,
+body.dark button,
+body.dark .caption {
+  color: white;
+}
+
+body.dark .navbar {
+  background-color: #1e1e1e;
+}
+
+body.dark .search-input {
+  background-color: #333;
+  border: 1px solid #555;
+  color: white;
+}
+
+body.dark .pagination button {
+  background-color: #333;
+}
+
+body.dark .pagination button.active {
+  background-color: white;
+  color: black;
+}
+
+body.dark .button-blue {
+  background-color: var(--light-blue);
+  color: black;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.button-primary:hover {
+  background-color: var(--light-blue);
+}
+
+
+body.dark .button-blue.icon-text-button {
+  padding: 8px 12px;
+}
+
+body.dark .button-blue:hover {
+  background-color: #5cb5e0;
+  color: black;
+}
+
+body.dark .button-red {
+    background-color: #B91C1C;
+    color: #FEE2E2;
+    border-color:  #F87171 ;
+}
+
+body.dark .button-red:hover {
+    background-color: #991B1B;
+    color: #FEE2E2;
+    border-color: #EF4444;
+}
+
+body.dark.pagination button {
+  width: 36px;
+  height: 36px;
+  background-color: var(--grey);
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+body.dark.pagination button.active {
+  background-color: var(--light-blue);
+  color: white;
+}
+
+/* Responsive Layout*/
+@media (max-width: 768px) {
+  .search-bar {
+    flex-direction: column;
+  }
+  .results {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Dark mode for search page */
+.movie-item {
+    background-color: #f9f9f9;
+    padding: 10px;
+    display: flex; /* Helps if you want to align content inside, can be adjusted */
+    flex-direction: column;
+}
+
+.movie-item a {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Allows link to fill the item if item is flex container */
+}
+
+/*
+   Dark Mode Adjustments for .default-border (if not already handled).
+   This will make borders less stark in dark mode for any element with this class.
+*/
+body.dark .default-border {
+    border-color: var(--grey);
+}
+
+/* Dark Mode for .movie-item */
+body.dark .movie-item {
+    background-color: var(--dark-blue);
+}
+
+/*
+   Text color for elements inside .movie-item in dark mode.
+   Global rules like 'body.dark h3' and 'body.dark p' from your main.css
+   should make most text white. These are more specific overrides if needed or for consistency.
+*/
+body.dark .movie-item .movie-title { /* Targets h3.movie-title */
+    color: white;
+}
+
+body.dark .movie-item p {
+    color: var(--light-grey); /* Light grey for paragraph text like synopsis, rating details */
+}
+
+body.dark .movie-item p strong { /* For labels like 'Synopsis:', 'Rating:' */
+    color: var(--light-blue); /* A distinct, lighter color for emphasis */
+}
+
+/* Styles for Movie Details Page (previously in movie-details.html) */
+#movie-details-app .container {
+    padding: 20px;
+}
+
+#movie-details-app img.movie-poster-detail {
+    max-width: 300px;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#movie-details-app .movie-info p {
+    margin-bottom: 10px;
+}
+
+/* Base styles for genre tags and cast members (light mode) */
+#movie-details-app .genres span,
+#movie-details-app .cast-member {
+    background-color: #e0e0e0; /* Light grey background for light mode */
+    padding: 5px 10px;
+    border-radius: 15px;
+    margin-right: 5px;
+    display: inline-block;
+    margin-bottom: 5px;
+    color: #333; /* Default dark text for light mode */
+    text-align: left; /* Default alignment, cast-member overrides to center later */
+}
+
+/* Specific to cast-member if it needs centering */
+#movie-details-app .cast-member {
+    text-align: center;
+    width: 100px;
+}
+
+#movie-details-app .trailer iframe {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 560px;
+    height: 315px;
+    /* border:0; was added in a previous step, ensure it's here or on the element if frameborder was removed */
+}
+
+#movie-details-app .cast-member p.cast-actor-name {
+    font-size: 0.9em;
+    color: #333;
+    font-weight: bold; /* Making actor name bold for emphasis */
+    margin-bottom: 2px;
+    margin-top: 5px;
+}
+
+#movie-details-app .cast-member p.cast-character {
+    font-size: 0.8em;
+    color: #555; /* Default character name color for light mode */
+    margin-top: 0;
+}
+
+
+/* Dark Mode Overrides for Movie Details Page Elements */
+
+/* For Genre Tags */
+body.dark #movie-details-app .genres span {
+    background-color: var(--grey);
+    color: var(--light-grey);
+    border: 1px solid var(--light-blue);/* Optional: subtle border to make them pop */
+}
+
+/* For Cast Member Boxes */
+body.dark #movie-details-app .cast-member {
+    background-color: var(--dark-blue); /* Dark background for cast member box */
+    /* border: 1px solid var(--grey); /* Using .default-border might be better if consistency is desired */
+                                      /* If .cast-member doesn't have .default-border, you might add a border here */
+}
+
+/* For Actor's Name in Cast Member Box */
+body.dark #movie-details-app .cast-member p.cast-actor-name {
+    color: white; /* White for actor's name */
+}
+
+/* For Character's Name in Cast Member Box */
+body.dark #movie-details-app .cast-member p.cast-character {
+    color: var(--light-grey); /* Light grey for character name */
+}
+
+body.dark #movie-details-app .genres strong,
+body.dark #movie-details-app .cast h3 { /* Targets "Genres:" and "Top Billed Cast" */
+    color: white; /* Or var(--light-grey) */
+}
+
+/* buttons in movie-details */
+.interaction-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.interaction-buttons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.interaction-buttons button .material-symbols-outlined {
+  font-size: 1.2em;
+}
+
+
+/* New styles for homepage icon buttons */
+.icon-text-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  text-align: center;
+  padding: 8px 12px;
+  min-width: 70px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+
+.icon-text-button .material-symbols-outlined {
+  font-size: 28px;
+}
+
+.icon-text-button p {
+  font-size: 0.7em;
+  margin: 0;
+  line-height: 1;
+  font-weight: 500;
+}
+
+body.dark .icon-text-button p {
+  color: var(--dark-blue);
+}
+
+@media (max-width: 700px) {
+  .icon-text-button {
+    padding: 6px 8px;    /* Reduce padding */
+    min-width: 70px;     /* Reduce minimum width */
+    gap: 0.3em;          /* Reduce space between icon and text */
+    min-height: 60px;   /* Reduce minimum height */
+  }
+
+}

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="./images/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account</title>
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,block,bookmark,dark_mode,explore,home,info,light_mode,search,visibility"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style scoped>
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+            background-color: whitesmoke;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            gap: 10px;
+            margin: 20px;
+        }
+
+        body.dark .info-panel {
+            background-color: #1e1e1e;
+        }
+
+        .info-panel hr {
+            width: 100%;
+            border: 0.5px solid darkgray;
+            margin: 5px 0;
+        }
+
+        .edit-panel {
+            /* display: none; */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            padding: 20px;
+            transform: translate(-50%, -50%);
+            background: var(--light-blue);
+            border: 1px solid #000000;
+            z-index: 1001;
+            border-radius: 15px;
+            gap: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark .edit-panel{
+            background: #1e1e1e;
+        }
+
+        .editUserForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 0px;
+        }
+
+        .editUserForm div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editUserForm div label {
+            width: 120px;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .buttons-space {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: left;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .a-button {
+            text-decoration: none;
+            font-size: 16px;
+            font-family: 'Arial', sans-serif;
+            font-weight: 600;
+        }
+
+        .editUserForm div input {
+            flex: 1;
+            /* max-width: 200px; */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: rgba(255, 0, 0, 0.5); */
+            z-index: 9999;
+            pointer-events: all;
+        }
+
+        .movie-list-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .movie-list-link h3:hover {
+            color: var(--light-blue);
+        }
+
+        /* when width <= 600px */
+        @media (max-width: 600px) {
+            .edit-panel {
+                width: 90%;
+                height: 90%;
+                overflow-y: auto;
+            }
+            .editUserForm div {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .editUserForm div input {
+                width: 100%;
+            }
+        }
+    </style>
+    <script type="module">
+      const { createApp } = Vue;
+      import Navbar from "./components/Navbar.js";
+
+      const nav = createApp({
+        components: {
+          Navbar,
+        },
+      });
+      nav.mount("#navbar");
+    </script>
+</head>
+
+<body>
+<div id="navbar">
+    <navbar />
+</div>
+
+<div id="app">
+    <div class="info-panel">
+        <h3>Account</h3>
+         <hr>
+        <img :src="avatar" alt="User Avatar" width="24">
+        <p>Username: {{ username || 'N/A' }}</p>
+        <p v-if="date_of_birth">Date of Birth: {{ date_of_birth }}</p>
+        <p v-if="address">Address: {{ address }}</p>
+        <p v-if="email">Email: {{ email }}</p>
+        <div class="buttons-space">
+            <button v-if="isAdmin" type="button" @click="goToAdminPage" class="button-blue">Go to Admin Page</button>
+            <button type="button" @click="editPanel = true" class="button-blue">Edit Profile</button>
+            <button type="button" @click="passwordPanel=true" class="button-blue">Change Password</button>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <a href="/movie-list.html" class="movie-list-link"><h3>My Movie List</h3></a>
+        <hr>
+        <div class="buttons-space">
+            <a
+                v-for="list in movieLists"
+                :key="list.list_id"
+                class="button-blue a-button"
+                :href="'/movie-list.html?list_id=' + list.list_id"
+                style="text-decoration: none;"
+            >{{list.name || "N/A"}}</a>
+            <p v-if="movieLists.length == 0">You don't have any movie list now</p>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div class="buttons-space">
+            <button type="button" @click="logout" class="button-blue" style="background-color: gray;">Logout</button>
+            <button type="button" @click="deleteUser()" class="button-blue" style="background-color: pink;">Delete Account</button>
+        </div>
+    </div>
+
+    <div v-if="editPanel" class="overlay">
+        <div class="edit-panel">
+            <form @submit.prevent="uploadAndUpdateAvatar" class="editUserForm">
+                <div>
+                    <img :src="avatar" alt="User Avatar" width="24">
+                    <input ref="avatarFile" type="file" name="avatar" accept="image/*" required>
+                </div>
+                <div>
+                    <button type="submit" class="button-blue">Update Avatar</button>
+                </div>
+            </form>
+
+            <form id="editUserForm" class="editUserForm" @submit.prevent="updateUserInfo()">
+                <div>
+                    <label for="userName">User Name:</label>
+                    <input v-model="username" type="text" id="userName" name="username" required>
+                </div>
+                <div>
+                    <label for="date_of_birth">Date of Birth:</label>
+                    <input v-model="date_of_birth" type="date" id="date_of_birth" name="date_of_birth">
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input v-model="address" type="text" id="address" name="address">
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input v-model="email" type="email" id="email" name="email" required>
+                </div>
+                <div class="buttons-space">
+                    <button type="submit" class="button-blue">Update</button>
+                    <button type="button" @click="editPanel=false" class="button-blue">Cancel</button>
+                </div>
+                <p v-if="isLoading"> loading... </p>
+            </form>
+        </div>
+    </div>
+
+    <div v-if="passwordPanel" class="overlay">
+        <div class="edit-panel">
+            <form @submit.prevent="updatePassword" class="editUserForm">
+                <div>
+                    <label for="currentPassword">Current password:</label>
+                    <input v-model="currentPassword" type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div>
+                    <label for="newPassword">New password:</label>
+                    <input v-model="newPassword" type="password" id="newPassword" name="newPassword" required @input="updatePasswordStrength">
+                </div>
+                <div class="password-strength-container">
+                    <div class="password-strength-bar" :style="{ width: passwordStrength.width, backgroundColor: passwordStrength.color }">
+                    </div>
+                </div>
+                <div class="password-strength-label" :style="{ color: passwordStrength.labelColor }">
+                    {{ passwordStrength.label }}
+                </div>
+                <div class="buttons-space">
+                    <button type="submit" class="button-blue">Save</button>
+                    <button type="button" @click="passwordPanel=false" class="button-blue">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div v-if="isLoading" class="loading">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+            <div style="padding: 30px 50px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: var(--light-blue); display: flex; flex-direction: column; align-items: center;">
+                <h1>loading...</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                user: null,
+                editPanel: false,
+                passwordPanel: false,
+                isLoading: false,
+                avatar: '/avatars/default.png',
+                username: '',
+                date_of_birth: null,
+                address: '',
+                email: '',
+                isAdmin: false,
+                currentPassword: '',
+                newPassword: '',
+                passwordStrength: {
+                    score: 0,
+                    label: 'Enter a password',
+                    color: '#ddd',
+                    width: '0%',
+                    labelColor: '#555'
+                },
+                movieLists: [],
+            }
+        },
+        methods: {
+            async fetchUserInfo() {
+                this.isLoading = true;
+                try {
+                    const response = await fetch('/api/users/info');
+                    if (response.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    const userData = {
+                        ...data.user,
+                        date_of_birth: data.user.date_of_birth ? new Date(data.user.date_of_birth).toISOString().split('T')[0] : null,
+                        isAdmin: data.user.isAdmin === 1
+                    };
+                    this.user = userData;
+                    if (this.user != null) this.resetData_editUser(this.user);
+                    else this.resetData();
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
+                if (!this.editPanel) this.isLoading = false;
+            },
+            async uploadAndUpdateAvatar() {
+                if (!this.$refs.avatarFile.files.length) {
+                    alert('Please select a file first.');
+                    return;
+                }
+                const file = this.$refs.avatarFile.files[0];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ only accept JPEG, JPG, PNG or GIF');
+                    return;
+                }
+                // AI-assisted snippet: ChatGPT suggested using this method to check file size
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ file size should be less than 5MB');
+                    return;
+                }
+                this.isLoading = true;
+                const formData = new FormData();
+                formData.append('avatar', this.$refs.avatarFile.files[0]);
+                try {
+                    const response = await fetch('/api/users/upload-avatar', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    if (!response.ok) throw new Error(`Upload failed: ${response.statusText}`);
+                    const result = await response.json();
+                    if (response.status === 200) {
+                        this.avatar = result.filePath;
+                        await this.updateAvatar();
+                    } else {
+                        alert('Failed to upload avatar.');
+                    }
+                } catch (error) {
+                    console.error('Avatar upload error:', error);
+                    alert('Failed to upload avatar.');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            async updateAvatar(){
+                this.isLoading = true;
+                if (this.avatar === '/avatars/default.png') {
+                    this.isLoading = false;
+                    alert('Please select an avatar file first.');
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/users/update-avatar', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ avatar: this.avatar })
+                    });
+                    if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
+                    const result = await response.json();
+                    if (response.status === 200) alert('✅ Avatar updated successfully!');
+                    else alert('❌ Failed to upload avatar.');
+                } catch (error) {
+                    console.error('Avatar upload error:', error);
+                    alert('❌ Failed to upload avatar.');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            updateUserInfo() {
+                if (!this.username || !this.email) {
+                    alert('❌ username and email can not be empty.');
+                    return;
+                }
+                this.isLoading = true;
+                fetch('/api/users/update', {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: this.username,
+                        date_of_birth: this.date_of_birth,
+                        address: this.address,
+                        email: this.email,
+                    })
+                })
+                .then(async response => {
+                    if (response.status === 400) {
+                        const errorData = await response.json();
+                        this.isLoading = false;
+                        alert(`❌ ${errorData.message || 'Invalid input data.'}`);
+                        throw new Error(errorData.message || 'Invalid input data');
+                    }
+                    if (!response.ok) throw new Error('Network error');
+                    return response.json();
+                })
+                .then(data => {
+                    this.fetchUserInfo();
+                    alert('✅ User info is updated successfully!');
+                    this.editPanel = false;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.fetchUserInfo();
+                    this.isLoading = false;
+                    console.error('Error editing user:', error);
+                });
+            },
+            deleteUser() {
+                this.isLoading = true;
+                if (!confirm('delete the user = ' + this.username + ' ?')) {
+                    this.isLoading = false;
+                    return;
+                }
+                fetch('/api/users/delete', {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: this.username })
+                })
+                .then(async response => {
+                    if (response.status === 403 || response.status === 404) {
+                        const errorData = await response.json();
+                        this.isLoading = false;
+                        alert(`❌ ${errorData.message || 'You are not allowed to delete this user or user not found.'}`);
+                        throw new Error(errorData.message || 'Invalid action');
+                    }
+                    if (!response.ok) throw new Error('Network error');
+                    return response.json();
+                })
+                .then(async data => {
+                    alert('✅ User deleted successfully!');
+                    await this.logout();
+                    window.location.href = '/login.html';
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                });
+                this.isLoading = false;
+            },
+            async logout() {
+                const response = await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: 'include',
+                    headers: {"Content-Type": "application/json"},
+                });
+                if (!response.ok) this.responseMsg = `${response.status}: ${response.statusText}`;
+                const msg = await response.json();
+                console.log(msg.message)
+                window.location.replace('/index.html');
+            },
+            updatePasswordStrength() {
+                const pword = this.newPassword;
+                let score = 0;
+                if (!pword) {
+                    this.passwordStrength = { score: 0, label: 'Enter a password', color: '#ddd', width: '0%', labelColor: '#555' };
+                    return;
+                }
+                if (pword.length >= 8) score += 1;
+                if (pword.length >= 10) score += 1;
+                if (pword.length >= 12) score += 1;
+                if (/[a-z]/.test(pword)) score += 1;
+                if (/[A-Z]/.test(pword)) score += 1;
+                if (/[0-9]/.test(pword)) score += 1;
+                if (/[\W_]/.test(pword)) score += 1;
+                let strength = { score: score, label: '', color: '', width: '', labelColor: '#555' };
+                if (pword.length > 0 && pword.length < 6 && score <=1) {
+                    strength.label = 'Too short'; strength.color = '#dc3545'; strength.width = '10%'; strength.labelColor = '#dc3545';
+                } else if (score <= 2) {
+                    strength.label = 'Very Weak'; strength.color = '#dc3545'; strength.width = '20%'; strength.labelColor = '#dc3545';
+                } else if (score === 3) {
+                    strength.label = 'Weak'; strength.color = '#fd7e14'; strength.width = '40%'; strength.labelColor = '#fd7e14';
+                } else if (score === 4 || score === 5) {
+                    strength.label = 'Medium'; strength.color = '#ffc107'; strength.width = '60%'; strength.labelColor = '#b88b00';
+                } else if (score === 6) {
+                    strength.label = 'Strong'; strength.color = '#28a745'; strength.width = '80%'; strength.labelColor = '#28a745';
+                } else {
+                    strength.label = 'Very Strong'; strength.color = '#20c997'; strength.width = '100%'; strength.labelColor = '#20c997';
+                }
+                this.passwordStrength = strength;
+            },
+            async updatePassword() {
+                this.isLoading = true;
+                if (this.passwordStrength.score < 3) {
+                    this.isLoading = false;
+                    alert('❌ Password is too weak. Please choose a stronger password.');
+                    return;
+                }
+                if (!this.currentPassword || !this.newPassword || this.currentPassword === this.newPassword) {
+                    this.isLoading = false;
+                    alert('❌ Please fill in all fields and ensure the new password is different from the current password.');
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/users/update-password', {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            currentPassword: this.currentPassword,
+                            newPassword: this.newPassword
+                        })
+                    });
+                    if (response.status >= 400) {
+                        const err = await response.json();
+                        alert(`❌ ${err.message || 'Invalid input data. Please check your input.'}`);
+                        return;
+                    }
+                    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                    const result = await response.json();
+                    alert(`✅ ${result.message || 'Password updated successfully!'}`);
+                    this.passwordPanel = false;
+                } catch (error) {
+                    console.error('Password update error:', error);
+                    alert('❌ Failed to update password.');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            goToAdminPage() {
+                window.location.href = '/admin.html';
+            },
+            resetData(){
+                this.avatar = '/avatars/default.png';
+                this.username = '';
+                this.date_of_birth = null;
+                this.address = '';
+                this.email = '';
+                this.isAdmin = false;
+            },
+            resetData_editUser(user){
+                this.avatar = user.avatar;
+                this.username = user.username;
+                this.date_of_birth = user.date_of_birth;
+                this.address = user.address;
+                this.email = user.email;
+                this.isAdmin = user.isAdmin;
+            },
+            async fetchMovieList() {
+                try {
+                    const response = await fetch('/api/lists/show', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!response.ok) throw new Error(`Failed to fetch movie list: ${response.statusText}`);
+                    const data = await response.json();
+                    this.movieLists = data.movie_lists || [];
+                } catch (error) {
+                    console.error('Error syncing movie list:', error);
+                }
+            },
+        },
+        mounted() {
+            this.fetchUserInfo();
+            this.fetchMovieList();
+            this.updatePasswordStrength(); // Initialize on mount
+        },
+    });
+    app.mount('#app');
+</script>
+
+</body>
+</html>

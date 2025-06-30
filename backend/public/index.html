@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="./favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SceneIt: Search Less, Watch More</title>
+  <link rel="stylesheet" href="stylesheets/main.css" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle,arrow_forward,bookmark,dark_mode,explore,home,info,light_mode,open_in_new,search,visibility" />
+
+
+  <script type="module">
+    import {createApp} from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+    import Navbar from "./components/Navbar.js";
+    import BaseInput from "./components/BaseInput.js";
+    import {getCookie} from "./scripts/cookie-helpers.js";
+    import {sceneitRequest} from "./scripts/api-helper.js";
+
+    createApp({
+      components: {
+        Navbar,
+      },
+    }).mount("#navbar");
+
+    createApp({
+      components: {
+        BaseInput
+      },
+      data() {
+        return {
+          imgWidth: 0,
+          popularMovie: null,
+          isLoadingPopularMovie: false,
+          popularMovieError: null,
+          tmdbImageBaseUrl: 'https://image.tmdb.org/t/p/w780',
+          isCardFlipped: false,
+          popularMovieFullDetails: null,
+          isLoadingMovieDetails: false,
+          movieDetailsError: null,
+          isInteractionModalVisible: false,
+          currentModalStep: '',
+          modalContent: {
+            title: '',
+            question: '',
+            actions: []
+          },
+          isAddToListModalVisible: false,
+          currentUserLists: [],
+          isLoadingUserLists: false,
+          userListsError: null,
+          isAddingNewListInModal: false,
+          newListNameInModal: '',
+          newListDescriptionInModal: '',
+          popularMoviesCache: [],
+          currentMovieIndex: -1,
+          popularMoviesCurrentPage: 1,
+          noMorePopularMovies: false,
+        };
+      },
+      computed: {
+        isUserLoggedIn() {
+          return !!getCookie("username");
+        },
+        loggedInUsername() {
+          return getCookie("username");
+        }
+      },
+      methods: {
+        formatRating(rating) {
+          if (typeof rating === 'number') {
+            return rating.toFixed(1);
+          }
+          return 'N/A';
+        },
+        checkPosition() {
+          const posterElement = this.$refs.posterImg;
+          if (posterElement) {
+            this.imgWidth = posterElement.clientWidth || 0;
+            document.documentElement.style.setProperty("--image-width", `${this.imgWidth}px`);
+          } else {
+            const defaultCardWidth = 400;
+            this.imgWidth = defaultCardWidth;
+            document.documentElement.style.setProperty("--image-width", `${defaultCardWidth}px`);
+          }
+        },
+
+        async loadMorePopularMovies(isInitialLoad = false) {
+            if (this.isLoadingPopularMovie || (this.noMorePopularMovies && !isInitialLoad) ) {
+                if (this.noMorePopularMovies && this.popularMoviesCache.length === 0 && isInitialLoad) {
+                } else {
+                    return;
+                }
+            }
+
+            this.isLoadingPopularMovie = true;
+            this.popularMovieError = null;
+            try {
+                const data = await sceneitRequest(`/api/movies/popular?page=${this.popularMoviesCurrentPage}`, "GET");
+
+                if (data.results && data.results.length > 0) {
+                    this.popularMoviesCache = this.popularMoviesCache.concat(data.results);
+                    if (data.page >= data.total_pages) {
+                        this.noMorePopularMovies = true;
+                    } else {
+                        this.popularMoviesCurrentPage = data.page + 1;
+                    }
+                } else {
+                    this.noMorePopularMovies = true;
+                    if (this.popularMoviesCache.length === 0 && isInitialLoad) {
+                        this.popularMovieError = "No popular movies found.";
+                    }
+                }
+            } catch (error) {
+                this.popularMovieError = error.message || "Failed to load movie data.";
+                this.popularMovie = null;
+            } finally {
+                this.isLoadingPopularMovie = false;
+            }
+        },
+
+        displayCurrentPopularMovie() {
+            if (this.popularMoviesCache.length > 0 && this.currentMovieIndex >= 0 && this.currentMovieIndex < this.popularMoviesCache.length) {
+                this.popularMovie = this.popularMoviesCache[this.currentMovieIndex];
+                this.isCardFlipped = false;
+                this.popularMovieFullDetails = null;
+                this.$nextTick(() => {
+                    this.checkPosition();
+                });
+            } else if (this.popularMoviesCache.length > 0 && this.noMorePopularMovies) {
+                if (typeof showToast === 'function') showToast("You've seen all available popular movies! Looping back.", "info");
+                this.currentMovieIndex = 0;
+                if (this.popularMoviesCache.length > 0) {
+                    this.popularMovie = this.popularMoviesCache[this.currentMovieIndex];
+                    this.isCardFlipped = false;
+                    this.popularMovieFullDetails = null;
+                    this.$nextTick(() => this.checkPosition());
+                } else {
+                     this.popularMovie = null;
+                }
+            } else if (this.noMorePopularMovies && this.popularMoviesCache.length === 0) {
+                this.popularMovieError = "No popular movies found.";
+                this.popularMovie = null;
+            }
+        },
+
+        async initializeAndShowFirstMovie() {
+            this.currentMovieIndex = -1;
+            this.popularMoviesCache = [];
+            this.popularMoviesCurrentPage = 1;
+            this.noMorePopularMovies = false;
+            await this.loadMorePopularMovies(true);
+
+            if (this.popularMoviesCache.length > 0) {
+                this.currentMovieIndex = 0;
+                this.displayCurrentPopularMovie();
+            } else if (!this.popularMovieError) {
+                 this.popularMovieError = "No popular movies available to display.";
+            }
+        },
+
+        async showNextPopularMovie() {
+            if (this.isLoadingPopularMovie) return;
+
+            this.currentMovieIndex++;
+
+            if (this.currentMovieIndex < this.popularMoviesCache.length) {
+                this.displayCurrentPopularMovie();
+            } else {
+                if (this.noMorePopularMovies) {
+                    this.displayCurrentPopularMovie();
+                } else {
+                    await this.loadMorePopularMovies(false);
+                    if (this.currentMovieIndex < this.popularMoviesCache.length) {
+                        this.displayCurrentPopularMovie();
+                    } else if (this.noMorePopularMovies && this.popularMoviesCache.length > 0) {
+                        this.displayCurrentPopularMovie();
+                    } else {
+                        if(!this.popularMovieError) this.popularMovieError = "Could not load next movie.";
+                        this.popularMovie = null;
+                    }
+                }
+            }
+        },
+
+        toggleCardFlip() {
+          this.isCardFlipped = !this.isCardFlipped;
+          if (this.isCardFlipped && this.popularMovie) {
+            if (!this.popularMovieFullDetails || this.popularMovieFullDetails.id !== this.popularMovie.id) {
+              this.fetchMovieDetailsForCard();
+            }
+          }
+        },
+
+        async fetchMovieDetailsForCard() {
+          if (!this.popularMovie || !this.popularMovie.id) {
+            this.movieDetailsError = "No movie selected to fetch details for.";
+            return;
+          }
+          this.isLoadingMovieDetails = true;
+          this.movieDetailsError = null;
+          try {
+            const data = await sceneitRequest(`/api/movies/${this.popularMovie.id}`, "GET");
+            this.popularMovieFullDetails = data;
+          } catch (err) {
+            this.movieDetailsError = err.message;
+          } finally {
+            this.isLoadingMovieDetails = false;
+          }
+        },
+        openInteractionModal(step) {
+            this.currentModalStep = step;
+            this.updateModalContent();
+            this.isInteractionModalVisible = true;
+        },
+
+        closeInteractionModal() {
+            this.isInteractionModalVisible = false;
+            this.currentModalStep = '';
+        },
+
+        updateModalContent() {
+            const movieTitle = this.popularMovie?.title || 'this movie';
+            switch (this.currentModalStep) {
+                case 'askSeen':
+                    this.modalContent = {
+                        title: `Tell us about "${movieTitle}"`,
+                        question: "Have you seen this movie?",
+                        actions: [
+                            { id: 'seenYes', text: "Yes, I've Seen It", class: 'button-blue' },
+                            { id: 'seenNo', text: "No, I Haven't", class: 'button-grey' }
+                        ]
+                    };
+                    break;
+                case 'askLiked':
+                    this.modalContent = {
+                        title: `"${movieTitle}"`,
+                        question: "Did you like it?",
+                        actions: [
+                            { id: 'likedYes', text: "👍 Liked It", class: 'button-blue' },
+                            { id: 'likedNo', text: "👎 Didn't Like It", class: 'button-red' }
+                        ]
+                    };
+                    break;
+                case 'askLikedOptions':
+                    this.modalContent = {
+                        title: `"${movieTitle}" - Liked!`,
+                        question: "Would you like to:",
+                        actions: [
+                            { id: 'addToFavourites', text: "⭐ Add to Favourites", class: 'button-blue' },
+                            { id: 'addToCustomListFromLiked', text: "➕ Add to Custom List", class: 'button-blue' },
+                            { id: 'justSeenAndLiked', text: "🎬 Just Seen & Liked (Next Movie)", class: 'button-grey' }
+                        ]
+                    };
+                    break;
+                case 'askWantToWatch':
+                    this.modalContent = {
+                        title: `"${movieTitle}"`,
+                        question: "Are you interested in watching it?",
+                        actions: [
+                            { id: 'wantToWatchYes', text: "🤔 Want to Watch", class: 'button-blue' },
+                            { id: 'wantToWatchNo', text: "🤷 Not Interested", class: 'button-grey' }
+                        ]
+                    };
+                    break;
+                case 'askWantToWatchOptions':
+                    this.modalContent = {
+                        title: `"${movieTitle}" - Want to Watch!`,
+                        question: "Add to:",
+                        actions: [
+                            { id: 'addToWatchlist', text: "🕝 Add to Watchlist", class: 'button-blue' },
+                            { id: 'addToCustomListFromWant', text: "➕ Add to Custom List", class: 'button-blue' },
+                            { id: 'maybeLater', text: "➡️ Not Now (Show Next)", class: 'button-grey' }
+                        ]
+                    };
+                    break;
+                case 'askNotInterestedOptions':
+                     this.modalContent = {
+                        title: `"${movieTitle}" - Not Interested`,
+                        question: "Don't show this movie again?",
+                        actions: [
+                            { id: 'hideMovie', text: "🚫 Yes, Hide It", class: 'button-red' },
+                            { id: 'showNextMovieFromModal', text: "➡️ No, Show Next Movie", class: 'button-grey' }
+                        ]
+                    };
+                    break;
+                default:
+                    this.modalContent = { title: '', question: '', actions: [] };
+            }
+        },
+
+        async handleModalAction(actionId) {
+            const movieTitle = this.popularMovie?.title || "The movie";
+            switch (this.currentModalStep) {
+                case 'askSeen':
+                    if (actionId === 'seenYes') {
+                        await this.apiMarkAsSeen(this.popularMovie.id.toString(), movieTitle);
+                        this.openInteractionModal('askLiked');
+                    } else if (actionId === 'seenNo') {
+                        this.openInteractionModal('askWantToWatch');
+                    }
+                    break;
+                case 'askLiked':
+                    if (actionId === 'likedYes') {
+                        await this.apiMarkMovieSeen(this.popularMovie.id, true);
+                        this.openInteractionModal('askLikedOptions');
+                    } else if (actionId === 'likedNo') {
+                        if (typeof showToast === 'function') showToast(`Okay, we won't recommend "${movieTitle}" again.`, "info");
+                        await this.apiBlockMovie(this.popularMovie.id, movieTitle);
+                        await this.apiMarkMovieSeen(this.popularMovie.id, false);
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    }
+                    break;
+                case 'askLikedOptions':
+                    if (actionId === 'addToFavourites') {
+                        await this.apiMarkAsFavourite(this.popularMovie.id.toString(), movieTitle);
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    } else if (actionId === 'addToCustomListFromLiked') {
+                        if (!this.isUserLoggedIn) {
+                            if (typeof showToast === 'function') showToast("Please log in to use custom lists.", "info");
+                            this.closeInteractionModal();
+                            return;
+                        }
+                        this.openAddToListModal();
+                        this.closeInteractionModal();
+                    } else if (actionId === 'justSeenAndLiked') {
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    }
+                    break;
+                case 'askWantToWatch':
+                    if (actionId === 'wantToWatchYes') this.openInteractionModal('askWantToWatchOptions');
+                    else if (actionId === 'wantToWatchNo') this.openInteractionModal('askNotInterestedOptions');
+                    break;
+                case 'askWantToWatchOptions':
+                    if (actionId === 'addToWatchlist') {
+                        await this.apiAddToWatchlist(this.popularMovie.id.toString(), movieTitle);
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    } else if (actionId === 'addToCustomListFromWant') {
+                         if (!this.isUserLoggedIn) {
+                            if (typeof showToast === 'function') showToast("Please log in to use custom lists.", "info");
+                            this.closeInteractionModal();
+                            return;
+                        }
+                        this.openAddToListModal(); // This now refers to the page's method
+                        this.closeInteractionModal(); // Close the SeenIt modal
+                    } else if (actionId === 'maybeLater') {
+                        if (typeof showToast === 'function') showToast(`Skipping "${movieTitle}" for now.`, "info");
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    }
+                    break;
+                case 'askNotInterestedOptions':
+                    if (actionId === 'hideMovie') {
+                        if (typeof showToast === 'function') showToast(`Got it, we won't show you "${movieTitle}" again.`, "success");
+                        await this.apiBlockMovie(this.popularMovie.id, movieTitle);
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    } else if (actionId === 'showNextMovieFromModal') {
+                        this.closeInteractionModal();
+                        this.showNextPopularMovie();
+                    }
+                    break;
+            }
+        },
+
+        handleSeenIt() {
+          if (!this.popularMovie) return;
+          if (!this.isUserLoggedIn) {
+            if (typeof showToast === 'function') showToast("Please log in to track your movies.", "info");
+            return;
+          }
+          this.openInteractionModal('askSeen');
+        },
+        async openAddToListModal() {
+            if (!this.isUserLoggedIn) {
+                if (typeof showToast === 'function') showToast("Please log in to manage lists.", "info");
+                return;
+            }
+            this.isAddToListModalVisible = true;
+            this.isAddingNewListInModal = false;
+            this.newListNameInModal = '';
+            this.newListDescriptionInModal = '';
+            await this.fetchUserListsForModal();
+        },
+
+        closeAddToListModal() {
+            this.isAddToListModalVisible = false;
+        },
+
+        async fetchUserListsForModal() {
+            this.isLoadingUserLists = true;
+            this.userListsError = null;
+            try {
+                const results = await sceneitRequest("/api/lists/show", "GET");
+                this.currentUserLists = results?.movie_lists || [];
+            } catch (err) {
+                this.userListsError = err.message || "Failed to load your lists.";
+                if (typeof showToast === 'function') showToast(this.userListsError, "error");
+                this.currentUserLists = [];
+            } finally {
+                this.isLoadingUserLists = false;
+            }
+        },
+
+        async handleAddMovieToListInModal(listId) {
+            if (!this.popularMovie || !this.popularMovie.id) {
+                if (typeof showToast === 'function') showToast("No movie selected to add.", "error");
+                return;
+            }
+            try {
+                const reqData = { list_id: listId, movie_ext_id: this.popularMovie.id.toString() };
+                const results = await sceneitRequest("/api/lists/add_movie", "POST", reqData);
+                if (results && results.success) {
+                    if (typeof showToast === 'function') showToast(results.success, "success");
+                }
+                this.closeAddToListModal();
+                this.showNextPopularMovie(); // Move to next movie after adding to list from homepage
+            } catch (err) {
+                if (typeof showToast === 'function') showToast(err.message || "Failed to add movie to list.", "error");
+            }
+        },
+
+        showAddNewListFormInModal() {
+            this.isAddingNewListInModal = true;
+        },
+
+        async createNewListInModal() {
+            if (!this.newListNameInModal.trim()) {
+                if (typeof showToast === 'function') showToast("List name cannot be empty.", "error");
+                return;
+            }
+            try {
+                const newListData = {
+                    list_name: this.newListNameInModal,
+                    list_description: this.newListDescriptionInModal
+                };
+                const results = await sceneitRequest("/api/lists/add", "POST", newListData);
+                if (results && results.list_id) {
+                    if (typeof showToast === 'function') showToast(`List "${this.newListNameInModal}" created!`, "success");
+                    await this.fetchUserListsForModal();
+                    this.isAddingNewListInModal = false;
+                    this.newListNameInModal = '';
+                    this.newListDescriptionInModal = '';
+                }
+            } catch (err) {
+                if (typeof showToast === 'function') showToast(err.message || "Failed to create list.", "error");
+            }
+        },
+
+        cancelAddNewListInModal() {
+            this.isAddingNewListInModal = false;
+            this.newListNameInModal = '';
+            this.newListDescriptionInModal = '';
+        },
+
+        async addMovieToSpecialList(listName, movieIdExt, movieTitle) {
+            if (!this.isUserLoggedIn) {
+              if (typeof showToast === 'function') showToast(`Please log in to add movies to your ${listName}.`, "info");
+              return;
+            }
+            try {
+              if (typeof showToast === 'function') showToast(`Attempting to add "${movieTitle}" to ${listName}...`, "info");
+              const listsData = await sceneitRequest("/api/lists/show", "GET");
+              let specialList = listsData?.movie_lists?.find(l => l.name.toLowerCase() === listName.toLowerCase());
+              let listId;
+
+              if (specialList) {
+                listId = specialList.list_id;
+              } else {
+                if (typeof showToast === 'function') showToast(`"${listName}" list not found, creating it...`, "info");
+                const newListPayload = {
+                  list_name: listName,
+                  list_description: `My ${listName} movies. (Auto-created)`
+                };
+                const newListData = await sceneitRequest("/api/lists/add", "POST", newListPayload);
+                if (newListData && newListData.list_id) {
+                  listId = newListData.list_id;
+                   if (typeof showToast === 'function') showToast(`"${listName}" list created successfully.`, "success");
+                } else {
+                  throw new Error(`Failed to create "${listName}" list.`);
+                }
+              }
+
+              if (listId) {
+                const addMoviePayload = {
+                  list_id: listId,
+                  movie_ext_id: movieIdExt
+                };
+                const addResult = await sceneitRequest("/api/lists/add_movie", "POST", addMoviePayload);
+                 if (addResult && addResult.success) {
+                    if (typeof showToast === 'function') showToast(`"${movieTitle}" added to ${listName}.`, "success");
+                } else if (addResult && addResult.error) { // Check for explicit error from backend
+                    throw new Error(addResult.error);
+                } else {
+                     // Fallback for unexpected response structure
+                     console.warn("Add movie to list response was not as expected:", addResult);
+                     if (typeof showToast === 'function') showToast(`"${movieTitle}" might not have been added to ${listName}. Please check your list.`, "warning");
+                }
+              } else {
+                  throw new Error(`Could not obtain a list ID for "${listName}".`);
+              }
+            } catch (err) {
+              console.error(`Error processing ${listName} for "${movieTitle}":`, err);
+              if (typeof showToast === 'function') showToast(err.message || `Could not add movie to ${listName}.`, "error");
+            }
+          },
+
+        async apiMarkAsFavourite(movieId, movieTitle) {
+          if (!this.popularMovie || !this.popularMovie.id) {
+                if (typeof showToast === 'function') showToast("Movie data not loaded.", "error");
+                return;
+            }
+          await this.addMovieToSpecialList('Favorites', movieId, movieTitle);
+        },
+
+        async apiAddToWatchlist(movieId, movieTitle) {
+          if (!this.popularMovie || !this.popularMovie.id) {
+                if (typeof showToast === 'function') showToast("Movie data not loaded.", "error");
+                return;
+            }
+          await this.addMovieToSpecialList('Watchlist', movieId, movieTitle);
+        },
+
+        async apiBlockMovie(movieId, movieTitle) {
+          if (!this.isUserLoggedIn) return;
+          try {
+            await sceneitRequest('/api/users/block-movie', 'POST', { movieId: movieId.toString() });
+          } catch (error) {
+            if (typeof showToast === 'function') showToast("Could not hide movie: " + error.message, "error");
+          }
+        },
+        async apiMarkMovieSeen(movieId, liked) {
+            if (!this.isUserLoggedIn) return;
+            // This function is more for tracking if a user liked a movie they've seen.
+            // The actual adding to lists (like Favorites) is handled by other functions.
+            // You might want to extend this to store seen/liked status in the backend if needed.
+            // For now, it doesn't make a backend call beyond what other functions do.
+        },
+        async apiMarkAsSeen(movieId, movieTitle) {
+            if (!this.isUserLoggedIn) {
+                // This check is a safeguard, though the primary login check is done earlier.
+                if (typeof showToast === 'function') showToast("Please log in to update your 'Seen It' list.", "info");
+                return;
+            }
+            await this.addMovieToSpecialList('Seen It', movieId, movieTitle);
+        }
+      },
+
+      async mounted() {
+        await this.initializeAndShowFirstMovie();
+        window.addEventListener("resize", this.checkPosition);
+        if (localStorage.getItem("isDark") === "true") {
+          document.body.classList.add("dark");
+        }
+      },
+      beforeUnmount() {
+        window.removeEventListener("resize", this.checkPosition);
+      },
+    }).mount("#home-content");
+  </script>
+</head>
+
+<body>
+  <div id="navbar">
+    <navbar />
+  </div>
+
+  <main id="home-content">
+    <div v-if="isLoadingPopularMovie && popularMoviesCache.length === 0" class="loading-message" style="text-align: center; padding: 20px;"> <h2>Loading popular movie...</h2>
+    </div>
+
+    <div v-else-if="popularMovieError && !popularMovie" class="error-message" style="text-align: center; padding: 20px; color: red;"> <h2>Error</h2>
+        <p>{{ popularMovieError }}</p>
+        <button @click="initializeAndShowFirstMovie" class="button-blue">Try Reloading</button>
+    </div>
+
+    <template v-else-if="popularMovie">
+        <div class="flip-card-container" :class="{ 'is-flipped': isCardFlipped }">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <img ref="posterImg" class="poster_main_on_card" :src="popularMovie.poster_path ? tmdbImageBaseUrl + popularMovie.poster_path : './images/poster_01.jpg'"
+                        :alt="popularMovie.title + ' Poster'"
+                        @load="checkPosition">
+                </div>
+
+                <div class="flip-card-back">
+                    <button type="button" @click.prevent="toggleCardFlip" class="close-details-button" aria-label="Close details view">×</button>
+                    <div v-if="isLoadingMovieDetails" class="details-loading">Loading details...</div>
+                    <div v-else-if="movieDetailsError" class="details-error">Error: {{ movieDetailsError }}</div>
+                    <div v-else-if="popularMovieFullDetails" class="movie-details-content-on-card">
+                        <h3>{{ popularMovieFullDetails.title }}</h3>
+                        <img :src="popularMovieFullDetails.poster_path ? tmdbImageBaseUrl + popularMovieFullDetails.poster_path : (popularMovie.poster_path ? tmdbImageBaseUrl + popularMovie.poster_path : './images/poster_01.jpg')"
+                            :alt="popularMovieFullDetails.title + ' Poster'" class="details-poster-small">
+                        <p><strong>Synopsis:</strong> {{ popularMovieFullDetails.overview }}</p>
+                        <p><strong>Rating:</strong> {{ formatRating(popularMovieFullDetails.vote_average) }} / 10</p>
+                        <p v-if="popularMovieFullDetails.release_date"><strong>Release Date:</strong> {{ popularMovieFullDetails.release_date }}</p>
+                        <div v-if="popularMovieFullDetails.genres && popularMovieFullDetails.genres.length" class="genres-list">
+                            <strong>Genres:</strong>
+                            <span v-for="genre in popularMovieFullDetails.genres" :key="genre.id || genre" class="genre-tag">{{ typeof genre === 'object' ? genre.name : genre }}</span>
+                        </div>
+                        <a v-if="popularMovieFullDetails.id"
+                          :href="'./movie-details.html?id=' + popularMovieFullDetails.id"
+                          class="button-blue view-details-button-card"
+                          role="button">
+                            View Full Details
+                        </a>
+                    </div>
+                    <div v-else class="no-details">
+                      Details could not be loaded.
+                      <a v-if="popularMovie && popularMovie.id && !popularMovieFullDetails"
+                        :href="'./movie-details.html?id=' + popularMovie.id"
+                        class="button-blue view-details-button-card"
+                        role="button">
+                         View Full Details
+                      </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+          <div class="homepage-actions" style="text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+            <button @click="handleSeenIt" class="button-blue icon-text-button"> <span class="material-symbols-outlined">visibility</span>
+                <p>Seen it?</p>
+            </button>
+            <button @click="toggleCardFlip" class="button-blue icon-text-button" id="btn-info">
+                <span class="material-symbols-outlined">info</span>
+                <p>Info</p>
+            </button>
+            <button @click="showNextPopularMovie" class="button-blue icon-text-button">
+                <span class="material-symbols-outlined">arrow_forward</span>
+                <p>Next</p>
+            </button>
+        </div>
+
+        <div v-if="isInteractionModalVisible" class="interaction-modal-overlay" @click.self="closeInteractionModal">
+            <div class="interaction-modal" role="dialog" aria-modal="true" :aria-labelledby="modalContent.title">
+                <h3 class="modal-title" :id="modalContent.title">{{ modalContent.title }}</h3>
+                <p class="modal-question">{{ modalContent.question }}</p>
+                <div class="modal-actions">
+                    <button v-for="action in modalContent.actions"
+                            :key="action.id"
+                            @click="handleModalAction(action.id)"
+                            :class="action.class || 'button-blue'">
+                        {{ action.text }}
+                    </button>
+                </div>
+                <button @click="closeInteractionModal" class="modal-close-button" aria-label="Close modal">&times;</button>
+            </div>
+        </div>
+
+        <div v-if="isAddToListModalVisible" class="interaction-modal-overlay" @click.self="closeAddToListModal">
+            <div class="interaction-modal" role="dialog" aria-modal="true" aria-labelledby="addToListTitle">
+                <h3 class="modal-title" id="addToListTitle">{{ isAddingNewListInModal ? 'Create New List' : 'Add "' + (popularMovie?.title || 'Movie') + '" to List' }}</h3>
+
+                <div v-if="isLoadingUserLists" class="loading-message">Loading lists...</div>
+                <div v-else-if="userListsError" class="error-message">{{ userListsError }}</div>
+
+                <div v-else-if="!isAddingNewListInModal">
+                    <ul v-if="currentUserLists.length > 0" class="modal-list-items">
+                        <li v-for="list in currentUserLists" :key="list.list_id" @click="handleAddMovieToListInModal(list.list_id)" tabindex="0" @keydown.enter.space="handleAddMovieToListInModal(list.list_id)">
+                            {{ list.name }}
+                        </li>
+                    </ul>
+                    <p v-else>No lists found. Create one below!</p>
+                    <div class="modal-actions" style="margin-top: 15px;">
+                        <button @click="showAddNewListFormInModal" class="button-blue">Create New List</button>
+                    </div>
+                </div>
+
+                <div v-else>
+                    <form @submit.prevent="createNewListInModal" class="modal-form">
+                        <base-input label="List Name" id="new-list-name-modal" type="text" required v-model="newListNameInModal"></base-input>
+                        <base-input label="Description" id="new-list-desc-modal" type="text" v-model="newListDescriptionInModal"></base-input>
+                        <div class="modal-actions" style="margin-top:15px;">
+                            <button type="submit" class="button-blue">Create List</button>
+                            <button type="button" @click="cancelAddNewListInModal" class="button-grey">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                <button @click="closeAddToListModal" class="modal-close-button" aria-label="Close modal">&times;</button>
+            </div>
+        </div>
+
+
+        <img class="poster_background"
+            v-if="popularMovie && popularMovie.poster_path"
+            :src="tmdbImageBaseUrl + popularMovie.poster_path"
+            alt="">
+        <img v-else class="poster_background" src="./images/poster_01.jpg" alt="">
+    </template>
+
+    <div v-else-if="!isLoadingPopularMovie && !popularMovieError" style="text-align: center; padding: 20px;"> <h2>No popular movie to display at the moment.</h2>
+        <button @click="initializeAndShowFirstMovie" class="button-blue">Try Reloading</button>
+    </div>
+</main>
+
+  <script src="./scripts/toaster.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</body>
+</html>
