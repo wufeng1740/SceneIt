@@ -7,7 +7,7 @@ const defaults = {
     host: 'localhost',
     user: 'root',
     port: 3306,
-    name: 'SceneIt',
+    name: 'sceneit',
     password: ''
   },
   server: {

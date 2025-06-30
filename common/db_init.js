@@ -1,4 +1,5 @@
-require("dotenv").config({ path: "./backend/config/.env" });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const { addSciFiMovies } = require('./db_addMovies.js');
 const { addAdminUser } = require('./db_addAdmin.js');
 async function main() {

@@ -1,7 +1,10 @@
 # env files
 */config/*.env
+.env
 
 # Dependency directories
+/node_modules/
+/jspm_packages/
 */node_modules/
 */jspm_packages/
 

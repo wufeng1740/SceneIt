@@ -1,3 +1,5 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const mysql = require('mysql2/promise');
 const defaults = require('../config/defaults');
 
@@ -13,7 +15,7 @@ async function connect() {
     host: process.env.DB_HOST || defaults.db.host,
     user: process.env.DB_USER || defaults.db.user,
     password: process.env.DB_PASSWORD || defaults.db.password,
-    database: defaults.db.name
+    database: process.env.DB_NAME || defaults.db.name,
   };
 
   // Cache the connection for later use

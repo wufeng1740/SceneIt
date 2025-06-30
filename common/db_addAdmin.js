@@ -1,5 +1,5 @@
 const argon2 = require("argon2");
-const db = require('../common/db.js');
+const db = require('./db.js');
 
 // const hashedPassword = await argon2.hash(req.body.password);
 async function addAdminUser() {

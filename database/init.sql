@@ -5,21 +5,21 @@ source ./backend/database/init.sql;
 
 -- Create Database ------------------------------------------------------------
 -- create database
-DROP DATABASE IF EXISTS SceneIt;
-DROP USER IF EXISTS 'scene-it'@'localhost';
+DROP DATABASE IF EXISTS sceneit;
+-- DROP USER IF EXISTS 'scene-it'@'localhost';
 
-CREATE DATABASE SceneIt
+CREATE DATABASE sceneit
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
 
 -- use database
-USE SceneIt;
+USE sceneit;
 
-CREATE USER 'scene-it'@'localhost';
-GRANT ALL PRIVILEGES ON SceneIt.*
-    TO 'scene-it'@'localhost';
-FLUSH PRIVILEGES;
+-- CREATE USER 'scene-it'@'localhost';
+-- GRANT ALL PRIVILEGES ON SceneIt.*
+--     TO 'scene-it'@'localhost';
+-- FLUSH PRIVILEGES;
 
 -- Create Tables ------------------------------------------------------------
 -- 1. Users table

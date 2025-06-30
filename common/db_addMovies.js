@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-multi-spaces */
 const axios = require('axios');
-const db = require('../common/db.js');
+const db = require('./db.js');
 const targetCount = 20; // we want 200 movies
 
-const TMDB_API_KEY_FW = process.env.TMDB_API_ACCESS_TOKEN; 
+const TMDB_API_KEY_FW = process.env.TMDB_API_ACCESS_TOKEN;
 
 // Hardcoded genre dictionary to map TMDB genre IDs to genre names
 const genreMap = {
