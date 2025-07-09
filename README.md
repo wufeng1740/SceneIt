@@ -1,4 +1,4 @@
-# Group Repository for COMP SCI 2207/7207 Web & Database Computing Web Application Project (2023 Semester 1)
+# Group Repository for COMP SCI 2207/7207 Web & Database Computing Web Application Project (2025 Semester 1)
 
 Your group's shared repository for the WDC 2023 Web App Project.
 
@@ -40,7 +40,7 @@ chmod +x sceneit_init.sh
 		# Database Initialisation
 
 # TMDB API key (please keep it secret)
-eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NjFiN2ZmNDI5OTQ0MmM0NzQyYzIyMTNmOWYyYThhOCIsIm5iZiI6MTc0Mzc0NTQ3Ny44NTYsInN1YiI6IjY3ZWY3MWM1YTkzMTNjNzE4NGFkMDIyOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8Lj1RVFkcHbLv2Zy2TtW4fva7nGaY4g19jE1A-cSkuw
+you can apply one from https://www.themoviedb.org/settings/api
 
 # Start the development server
 npm run dev

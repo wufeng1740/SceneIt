@@ -1,6 +1,7 @@
 # env files
 */config/*.env
 .env
+.env*
 
 # Dependency directories
 /node_modules/

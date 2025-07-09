@@ -13,9 +13,13 @@ async function connect() {
   // Use default settings to try and connect if nothing specific is passed in
   const connOpts = {
     host: process.env.DB_HOST || defaults.db.host,
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || defaults.db.user,
     password: process.env.DB_PASSWORD || defaults.db.password,
     database: process.env.DB_NAME || defaults.db.name,
+    ssl: {
+      rejectUnauthorized: false
+    }
   };
 
   // Cache the connection for later use
