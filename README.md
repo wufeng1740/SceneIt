@@ -1,15 +1,7 @@
-# Group Repository for COMP SCI 2207/7207 Web & Database Computing Web Application Project (2025 Semester 1)
+# Links
 
-Your group's shared repository for the WDC 2023 Web App Project.
-
-Auto commit/push/sync to Github is disabled by default in this repository.  
-- Enable the GitDoc extension to use this fucntionality (either in your VSCode settings, or in the Dev Container settings)
-
-See [HERE](https://myuni.adelaide.edu.au/courses/85266/pages/2023-web-application-group-project-specification) for the project specification.
-
-We recommend using the 'Shared Repository Model (Branch & Pull)' to collaborate on your work in this single repostory.  
-- You can read more about collaborating on GitHub repositories [HERE](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests)
-- When working on the same file at the same time, the 'Live Share' feature in VSCode can also help.
+- Homepage: https://site--sceneit--zwbf7r7t22j5.code.run/
+- Project Video Description: https://www.youtube.com/watch?v=oEaRfUicJBc
 
 # Project Overview
 
@@ -46,7 +38,7 @@ you can apply one from https://www.themoviedb.org/settings/api
 npm run dev
 ```
 
-In case you want to login into the database, infomation (database username and password) is saved in the `.env` file :`/backend/config/.env`.
+In case you want to login into the database, infomation (database username and password) is saved in the `.env` file.
 
 # Features and Functionality
 
@@ -123,3 +115,15 @@ In case you want to login into the database, infomation (database username and p
 - Google. (2025). *Google Icons [Icons]. Google Fonts.* https://fonts.google.com/icons
 - Coyier, C. (2024). *Creating an Auto-Closing Notification with an HTML Popover [Blog post]. CSS-Tricks.* https://css-tricks.com/creating-an-auto-closing-notification-with-an-html-popover/
 - apvarun. (2022). *toastify-js [Library Documentation]. GitHub.* https://github.com/apvarun/toastify-js/
+
+# Developer and other Info
+
+- Developers:
+  - Feng Wu
+  - Machupe Maja
+  - King Tong Lau (Tony)
+  - Aini Li
+- We're from:
+  - the University of Adelaide
+- Project is based on the course:
+  - CS7207 Web and Database Computing
