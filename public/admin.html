@@ -271,7 +271,7 @@
                 this.isLoading = true;
                 console.log('Fetching users...');
                 try {
-                    const response = await fetch('http://localhost:3000/admin/getuserslist');
+                    const response = await fetch('/admin/getuserslist');
                     if (response.status === 401) {
                         alert('❌ Unauthorized access! ❌');
                         window.location.href = '/login.html'; // Redirect to login page
@@ -306,7 +306,7 @@
                     alert('❌ Username already exists! ❌');
                     return;
                 }
-                fetch('http://localhost:3000/admin/adduser', {
+                fetch('/admin/adduser', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -346,7 +346,7 @@
                     alert('❌ Username already exists! ❌');
                     return;
                 }
-                fetch('http://localhost:3000/admin/edituser', {
+                fetch('/admin/edituser', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -387,7 +387,7 @@
                     return;
                 }
                 console.log('Delete user with ID:', userId);
-                fetch('http://localhost:3000/admin/deleteuser', {
+                fetch('/admin/deleteuser', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
